@@ -27,4 +27,7 @@ Route::prefix('siswa')->middleware('auth:sanctum')->group(function () {
     Route::get('/attendance/today', [App\Http\Controllers\Api\Siswa\AttendanceController::class, 'today']);
     Route::get('/attendance/history', [App\Http\Controllers\Api\Siswa\AttendanceController::class, 'history']);
     Route::apiResource('logbooks', App\Http\Controllers\Api\Siswa\LogbookController::class);
+      Route::get('/report', [App\Http\Controllers\Api\Siswa\ReportController::class, 'index']);
+    Route::post('/report/upload', [App\Http\Controllers\Api\Siswa\ReportController::class, 'upload']);
+    Route::delete('/report/delete', [App\Http\Controllers\Api\Siswa\ReportController::class, 'delete']);
 });
