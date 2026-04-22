@@ -67,9 +67,12 @@
             <ChevronDownIcon class="w-4 h-4 transition-transform" :class="{ 'rotate-180': openMenus.users }" />
           </button>
           <div v-show="openMenus.users" class="ml-9 mt-1 space-y-1">
-            <router-link to="/admin/users" class="flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100">📋 Semua User</router-link>
-            <router-link to="/admin/users/create" class="flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100">➕ Tambah User</router-link>
-            <router-link to="/admin/roles" class="flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100">👥 Manajemen Role</router-link>
+            <router-link to="/admin/users" class="flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100">
+              📋 Semua User
+            </router-link>
+            <router-link to="/admin/roles" class="flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100">
+              👥 Manajemen Role
+            </router-link>
           </div>
         </div>
 
@@ -80,7 +83,7 @@
             class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 transition"
           >
             <div class="flex items-center gap-3">
-              <DatabaseIcon class="w-5 h-5" />
+              <BookOpenIcon class="w-5 h-5" />
               <span class="text-sm font-medium">Data Master</span>
             </div>
             <ChevronDownIcon class="w-4 h-4 transition-transform" :class="{ 'rotate-180': openMenus.master }" />
@@ -90,7 +93,6 @@
             <router-link to="/admin/teachers" class="flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100">👨‍🏫 Data Guru</router-link>
             <router-link to="/admin/companies" class="flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100">🏢 Data Perusahaan</router-link>
             <router-link to="/admin/classes" class="flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100">📚 Data Kelas</router-link>
-            <router-link to="/admin/subjects" class="flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100">📖 Mata Pelajaran</router-link>
           </div>
         </div>
 
@@ -108,8 +110,7 @@
           </button>
           <div v-show="openMenus.placement" class="ml-9 mt-1 space-y-1">
             <router-link to="/admin/placements" class="flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100">📍 Data Penempatan</router-link>
-            <router-link to="/admin/placements/create" class="flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100">➕ Tambah Penempatan</router-link>
-            <router-link to="/admin/placements/map" class="flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100">🗺️ Peta Sebaran</router-link>
+            <router-link to="/admin/map" class="flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100">🗺️ Peta Sebaran</router-link>
           </div>
         </div>
 
@@ -153,6 +154,24 @@
           </div>
         </div>
 
+        <!-- Penilaian -->
+        <div class="mb-6">
+          <button 
+            @click="toggleMenu('assessment')"
+            class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 transition"
+          >
+            <div class="flex items-center gap-3">
+              <StarIcon class="w-5 h-5" />
+              <span class="text-sm font-medium">Penilaian</span>
+            </div>
+            <ChevronDownIcon class="w-4 h-4 transition-transform" :class="{ 'rotate-180': openMenus.assessment }" />
+          </button>
+          <div v-show="openMenus.assessment" class="ml-9 mt-1 space-y-1">
+            <router-link to="/admin/assessments" class="flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100">⭐ Nilai PKL</router-link>
+            <router-link to="/admin/assessments/report" class="flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100">📊 Rekap Nilai</router-link>
+          </div>
+        </div>
+
         <!-- Pengaturan -->
         <div class="mb-6">
           <button 
@@ -169,7 +188,7 @@
             <router-link to="/admin/settings/general" class="flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100">⚙️ Umum</router-link>
             <router-link to="/admin/settings/school" class="flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100">🏫 Data Sekolah</router-link>
             <router-link to="/admin/settings/academic" class="flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100">📅 Tahun Ajaran</router-link>
-            <router-link to="/admin/settings/backup" class="flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100">💾 Backup Database</router-link>
+            <router-link to="/admin/settings/radius" class="flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100">📍 Pengaturan Radius</router-link>
           </div>
         </div>
       </nav>
@@ -205,34 +224,11 @@
           </div>
           
           <div class="flex items-center gap-3">
-            <!-- Search -->
             <div class="hidden md:flex items-center bg-gray-100 rounded-xl px-4 py-2">
               <MagnifyingGlassIcon class="w-4 h-4 text-gray-400" />
               <input type="text" placeholder="Cari..." class="bg-transparent border-none focus:outline-none text-sm ml-2 w-48">
             </div>
-
-            <!-- Notifications -->
-            <div class="relative">
-              <button @click="notifOpen = !notifOpen" class="relative p-2 rounded-xl hover:bg-gray-100 transition">
-                <BellIcon class="w-5 h-5 text-gray-600" />
-                <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-              </button>
-              <div v-if="notifOpen" class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border overflow-hidden z-50">
-                <div class="p-3 border-b font-semibold">Notifikasi</div>
-                <div class="max-h-96 overflow-y-auto">
-                  <div class="p-3 hover:bg-gray-50 border-b cursor-pointer">
-                    <p class="text-sm">Siswa baru terdaftar</p>
-                    <p class="text-xs text-gray-500">5 menit lalu</p>
-                  </div>
-                  <div class="p-3 hover:bg-gray-50 border-b cursor-pointer">
-                    <p class="text-sm">Logbook perlu direview</p>
-                    <p class="text-xs text-gray-500">1 jam lalu</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- User Dropdown -->
+            <NotificationBell />
             <div class="relative">
               <button @click="userMenuOpen = !userMenuOpen" class="flex items-center gap-2 p-1 rounded-xl hover:bg-gray-100 transition">
                 <div class="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm font-bold">
@@ -261,7 +257,6 @@
         </div>
       </header>
 
-      <!-- Page Content -->
       <main class="p-6">
         <router-view />
       </main>
@@ -273,6 +268,7 @@
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import NotificationBell from '../components/NotificationBell.vue'
 import {
   HomeIcon, 
   UsersIcon, 
@@ -280,16 +276,14 @@ import {
   ViewfinderCircleIcon,
   DocumentChartBarIcon, 
   Cog6ToothIcon, 
-  BellIcon, 
   MagnifyingGlassIcon,
   UserIcon, 
   ArrowRightOnRectangleIcon, 
   Bars3Icon, 
   XMarkIcon, 
   ChevronDownIcon,
-  AcademicCapIcon,
-  BuildingOffice2Icon,
-  BookOpenIcon
+  BookOpenIcon,
+  StarIcon
 } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
@@ -298,13 +292,13 @@ const authStore = useAuthStore()
 
 const sidebarCollapsed = ref(false)
 const userMenuOpen = ref(false)
-const notifOpen = ref(false)
 const openMenus = ref({
   users: true,
   master: true,
   placement: false,
   monitoring: false,
   reports: false,
+  assessment: false,
   settings: false
 })
 
@@ -318,6 +312,7 @@ const pageTitle = computed(() => {
   if (path.includes('/placements')) return 'Penempatan PKL'
   if (path.includes('/monitoring')) return 'Monitoring'
   if (path.includes('/reports')) return 'Laporan'
+  if (path.includes('/assessments')) return 'Penilaian'
   if (path.includes('/settings')) return 'Pengaturan'
   return 'Admin Panel'
 })
@@ -329,7 +324,11 @@ const pageDescription = computed(() => {
     '/admin/students': 'Kelola data siswa peserta PKL',
     '/admin/teachers': 'Kelola data guru pembimbing',
     '/admin/companies': 'Kelola data perusahaan mitra',
-    '/admin/placements': 'Kelola penempatan PKL siswa'
+    '/admin/placements': 'Kelola penempatan PKL siswa',
+    '/admin/monitoring/attendance': 'Pantau absensi siswa',
+    '/admin/monitoring/logbook': 'Pantau logbook siswa',
+    '/admin/assessments': 'Kelola nilai PKL siswa',
+    '/admin/settings/radius': 'Atur radius absensi perusahaan'
   }
   return descriptions[route.path] || ''
 })

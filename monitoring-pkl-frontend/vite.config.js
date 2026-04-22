@@ -12,7 +12,14 @@ export default defineConfig({
       }
     }
   },
-  optimizeDeps: {
-    include: ['vue', 'vue-router', 'pinia']
+  build: {
+    rollupOptions: {
+      output: {
+        // Tambahkan hash pada setiap file untuk force update
+        entryFileNames: `assets/[name].[hash].js`,
+        chunkFileNames: `assets/[name].[hash].js`,
+        assetFileNames: `assets/[name].[hash].[ext]`
+      }
+    }
   }
 })

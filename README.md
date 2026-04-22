@@ -39,9 +39,50 @@
 
 ---
 
+<<<<<<< HEAD
 ## ⚡ Animasi
 
 ```css
 .fade-in {
   animation: fadeIn 0.8s ease-in-out;
 }
+=======
+## 🧠 Konsep Desain
+
+### 🎯 Design Philosophy
+
+- Minimalis tapi powerful
+- Fokus ke user experience
+- Visual clean & modern
+- Mobile friendly
+- Fast loading
+
+---
+
+## 🎨 Tampilan UI Premium
+
+### 🌈 Gradient Theme
+- Menggunakan warna:
+  - Indigo
+  - Blue
+  - Purple
+- Memberikan kesan **modern & profesional**
+
+---
+
+### 🧊 Glassmorphism Effect
+- Card transparan dengan blur
+- Shadow soft
+- Tampilan lebih elegan
+
+---
+
+### 🧱 Card Dashboard Modern
+- Rounded corner (border-radius besar)
+- Shadow lembut
+- Hover animation
+
+---
+
+
+>>>>>>> 8494d85 (Update README.md)

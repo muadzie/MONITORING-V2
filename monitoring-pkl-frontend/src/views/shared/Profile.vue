@@ -63,12 +63,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useAuthStore } from '../stores/auth'
-import axios from '../plugins/axios'
+import { useAuthStore } from '../../stores/auth'
+import axios from '../../plugins/axios'
 import { useToast } from 'vue-toastification'
 
-const authStore = useAuthStore()
 const toast = useToast()
+const authStore = useAuthStore()
 const loading = ref(false)
 
 const profile = ref({
@@ -91,7 +91,12 @@ const loadProfile = () => {
 const updateProfile = async () => {
   loading.value = true
   try {
-    const data = { name: profile.value.name, email: profile.value.email, phone: profile.value.phone }
+    const data = {
+      name: profile.value.name,
+      email: profile.value.email,
+      phone: profile.value.phone
+    }
+    
     if (password.value.new) {
       if (password.value.new !== password.value.confirm) {
         toast.error('Konfirmasi password tidak sesuai')
@@ -99,11 +104,16 @@ const updateProfile = async () => {
       }
       data.password = password.value.new
     }
+    
     await axios.put('/profile', data)
     toast.success('Profil berhasil diperbarui')
+    
+    // Update store
     authStore.user.name = profile.value.name
     authStore.user.email = profile.value.email
     authStore.user.phone = profile.value.phone
+    
+    // Reset password fields
     password.value.new = ''
     password.value.confirm = ''
   } catch (error) {
@@ -113,5 +123,7 @@ const updateProfile = async () => {
   }
 }
 
-onMounted(() => loadProfile())
+onMounted(() => {
+  loadProfile()
+})
 </script>

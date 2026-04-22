@@ -5,7 +5,7 @@
       <div class="container mx-auto px-6 py-4">
         <div class="flex items-center justify-between">
           <!-- Logo -->
-          <div class="flex items-center gap-3 group cursor-pointer">
+          <div class="flex items-center gap-3 group cursor-pointer" @click="scrollTo('home')">
             <div class="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:shadow-2xl">
               <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
@@ -19,10 +19,18 @@
 
           <!-- Desktop Menu -->
           <div class="hidden lg:flex items-center gap-8">
-            <a v-for="item in menuItems" :key="item.href" :href="item.href" class="text-gray-600 hover:text-indigo-600 transition-all duration-300 font-medium hover:scale-105">{{ item.label }}</a>
+            <button v-for="item in menuItems" :key="item.href" @click="scrollTo(item.href)" class="text-gray-600 hover:text-indigo-600 transition-all duration-300 font-medium hover:scale-105 cursor-pointer">
+              {{ item.label }}
+            </button>
           </div>
 
           <div class="flex items-center gap-4">
+            <router-link 
+              to="/register"
+              class="hidden md:flex px-4 py-2 text-indigo-600 font-semibold hover:bg-indigo-50 rounded-xl transition"
+            >
+              Daftar
+            </router-link>
             <router-link 
               to="/login"
               class="hidden md:flex px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:shadow-xl transition-all duration-300 hover:scale-105 font-semibold"
@@ -40,7 +48,10 @@
 
         <!-- Mobile Menu -->
         <div v-if="mobileMenuOpen" class="lg:hidden mt-4 py-4 bg-white rounded-xl shadow-xl">
-          <a v-for="item in menuItems" :key="item.href" :href="item.href" class="block px-4 py-3 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 transition" @click="mobileMenuOpen = false">{{ item.label }}</a>
+          <button v-for="item in menuItems" :key="item.href" @click="scrollTo(item.href)" class="block w-full text-left px-4 py-3 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 transition">
+            {{ item.label }}
+          </button>
+          <router-link to="/register" class="block px-4 py-3 text-indigo-600 font-semibold hover:bg-indigo-50 transition" @click="mobileMenuOpen = false">Daftar</router-link>
           <router-link to="/login" class="block px-4 py-3 text-indigo-600 font-semibold hover:bg-indigo-50 transition" @click="mobileMenuOpen = false">Masuk</router-link>
         </div>
       </div>
@@ -72,13 +83,15 @@
             </p>
             
             <div class="flex flex-col sm:flex-row gap-4 mt-8 justify-center lg:justify-start animate-fade-in-up animation-delay-300">
-              <router-link to="/login" class="group px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-2xl transition-all duration-300 hover:scale-105 text-center flex items-center justify-center gap-2">
+              <router-link to="/register" class="group px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-2xl transition-all duration-300 hover:scale-105 text-center flex items-center justify-center gap-2">
                 Mulai Sekarang
                 <svg class="w-5 h-5 group-hover:translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
                 </svg>
               </router-link>
-              <a href="#features" class="px-8 py-3 bg-white text-gray-700 rounded-xl font-semibold border-2 border-gray-200 hover:border-indigo-600 hover:shadow-xl transition-all duration-300 text-center">Lihat Fitur</a>
+              <button @click="scrollTo('features')" class="px-8 py-3 bg-white text-gray-700 rounded-xl font-semibold border-2 border-gray-200 hover:border-indigo-600 hover:shadow-xl transition-all duration-300 text-center cursor-pointer">
+                Lihat Fitur
+              </button>
             </div>
 
             <!-- Trusted By -->
@@ -101,14 +114,28 @@
             <!-- Floating Cards -->
             <div class="absolute -bottom-6 -left-6 bg-white rounded-xl shadow-2xl p-4 animate-float">
               <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center"><svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></div>
-                <div><p class="text-sm font-semibold">Absensi Real-time</p><p class="text-xs text-gray-500">Dengan GPS & Radius</p></div>
+                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                  <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold">Absensi Real-time</p>
+                  <p class="text-xs text-gray-500">Dengan GPS & Radius</p>
+                </div>
               </div>
             </div>
             <div class="absolute -top-6 -right-6 bg-white rounded-xl shadow-2xl p-4 animate-float animation-delay-2000">
               <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center"><svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></div>
-                <div><p class="text-sm font-semibold">Laporan Otomatis</p><p class="text-xs text-gray-500">Export ke Excel</p></div>
+                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold">Laporan Otomatis</p>
+                  <p class="text-xs text-gray-500">Export ke Excel</p>
+                </div>
               </div>
             </div>
           </div>
@@ -161,7 +188,9 @@
         <div class="grid md:grid-cols-4 gap-8">
           <div v-for="(step, idx) in steps" :key="idx" class="text-center group">
             <div class="relative">
-              <div class="w-20 h-20 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-3xl font-bold mx-auto mb-6 shadow-xl group-hover:scale-110 transition duration-300 z-10 relative">{{ idx + 1 }}</div>
+              <div class="w-20 h-20 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-3xl font-bold mx-auto mb-6 shadow-xl group-hover:scale-110 transition duration-300 z-10 relative">
+                {{ idx + 1 }}
+              </div>
               <div v-if="idx < 3" class="hidden md:block absolute top-10 left-full w-full h-0.5 bg-indigo-200 -translate-x-1/2"></div>
             </div>
             <h3 class="text-xl font-bold text-gray-800 mb-3">{{ step.title }}</h3>
@@ -172,7 +201,7 @@
     </section>
 
     <!-- Testimonials -->
-    <section class="py-24 bg-white">
+    <section id="testimonials" class="py-24 bg-white">
       <div class="container mx-auto px-6">
         <div class="text-center max-w-3xl mx-auto mb-16">
           <span class="text-indigo-600 font-semibold text-sm uppercase tracking-wider">Testimoni</span>
@@ -182,8 +211,13 @@
         <div class="grid md:grid-cols-3 gap-8">
           <div v-for="(testimonial, idx) in testimonials" :key="idx" class="p-8 bg-gradient-to-br from-gray-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition">
             <div class="flex items-center gap-4 mb-4">
-              <div class="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">{{ testimonial.name.charAt(0) }}</div>
-              <div><h4 class="font-bold text-gray-800">{{ testimonial.name }}</h4><p class="text-sm text-gray-500">{{ testimonial.role }}</p></div>
+              <div class="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                {{ testimonial.name.charAt(0) }}
+              </div>
+              <div>
+                <h4 class="font-bold text-gray-800">{{ testimonial.name }}</h4>
+                <p class="text-sm text-gray-500">{{ testimonial.role }}</p>
+              </div>
             </div>
             <p class="text-gray-600 italic">"{{ testimonial.content }}"</p>
             <div class="flex text-yellow-400 mt-4">★★★★★</div>
@@ -193,7 +227,7 @@
     </section>
 
     <!-- Pricing / Paket Section -->
-    <section class="py-24 bg-gradient-to-br from-gray-50 to-indigo-50">
+    <section id="pricing" class="py-24 bg-gradient-to-br from-gray-50 to-indigo-50">
       <div class="container mx-auto px-6">
         <div class="text-center max-w-3xl mx-auto mb-16">
           <span class="text-indigo-600 font-semibold text-sm uppercase tracking-wider">Paket Layanan</span>
@@ -207,8 +241,15 @@
               <div class="text-4xl font-bold text-indigo-600 mt-4">{{ pkg.price }}<span class="text-sm text-gray-500">/bulan</span></div>
             </div>
             <div class="p-8 space-y-3">
-              <div v-for="feature in pkg.features" :key="feature" class="flex items-center gap-2 text-gray-600"><svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>{{ feature }}</div>
-              <button class="w-full mt-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition">Pilih Paket</button>
+              <div v-for="feature in pkg.features" :key="feature" class="flex items-center gap-2 text-gray-600">
+                <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                {{ feature }}
+              </div>
+              <button class="w-full mt-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition">
+                Pilih Paket
+              </button>
             </div>
           </div>
         </div>
@@ -244,19 +285,29 @@
         <p class="text-indigo-100 text-lg mb-8 max-w-2xl mx-auto">Akses lebih mudah dengan aplikasi mobile kami. Tersedia untuk Android dan iOS.</p>
         <div class="flex flex-wrap gap-4 justify-center">
           <button class="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:scale-105 transition">
-            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M17.523 3.651a3.5 3.5 0 0 0-3.5 3.5v.5h-4v-.5a3.5 3.5 0 0 0-7 0v.5H2v13h20v-13h-1.477v-.5a3.5 3.5 0 0 0-3.5-3.5zm-10.5 0a1.5 1.5 0 0 1 3 0v.5h-3v-.5zm7 0a1.5 1.5 0 0 1 3 0v.5h-3v-.5zM20 16H4v-9h1.023v.5a3.5 3.5 0 0 0 7 0v-.5h3.954v.5a3.5 3.5 0 0 0 7 0V7H20v9z"/></svg>
-            <div class="text-left"><p class="text-xs">Download on</p><p class="font-semibold">Google Play</p></div>
+            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M17.523 3.651a3.5 3.5 0 0 0-3.5 3.5v.5h-4v-.5a3.5 3.5 0 0 0-7 0v.5H2v13h20v-13h-1.477v-.5a3.5 3.5 0 0 0-3.5-3.5zm-10.5 0a1.5 1.5 0 0 1 3 0v.5h-3v-.5zm7 0a1.5 1.5 0 0 1 3 0v.5h-3v-.5zM20 16H4v-9h1.023v.5a3.5 3.5 0 0 0 7 0v-.5h3.954v.5a3.5 3.5 0 0 0 7 0V7H20v9z"/>
+            </svg>
+            <div class="text-left">
+              <p class="text-xs">Download on</p>
+              <p class="font-semibold">Google Play</p>
+            </div>
           </button>
           <button class="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:scale-105 transition">
-            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.02.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-            <div class="text-left"><p class="text-xs">Download on</p><p class="font-semibold">App Store</p></div>
+            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.02.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+            </svg>
+            <div class="text-left">
+              <p class="text-xs">Download on</p>
+              <p class="font-semibold">App Store</p>
+            </div>
           </button>
         </div>
       </div>
     </section>
 
     <!-- FAQ Section -->
-    <section class="py-24 bg-white">
+    <section id="faq" class="py-24 bg-white">
       <div class="container mx-auto px-6 max-w-4xl">
         <div class="text-center mb-16">
           <span class="text-indigo-600 font-semibold text-sm uppercase tracking-wider">FAQ</span>
@@ -267,7 +318,9 @@
           <div v-for="(faq, idx) in faqs" :key="idx" class="border rounded-xl overflow-hidden">
             <button @click="faq.open = !faq.open" class="w-full flex justify-between items-center p-5 text-left font-semibold text-gray-800 hover:bg-gray-50 transition">
               {{ faq.question }}
-              <svg class="w-5 h-5 transition-transform" :class="{ 'rotate-180': faq.open }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+              <svg class="w-5 h-5 transition-transform" :class="{ 'rotate-180': faq.open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
             </button>
             <div v-if="faq.open" class="p-5 pt-0 text-gray-500 border-t">{{ faq.answer }}</div>
           </div>
@@ -276,7 +329,7 @@
     </section>
 
     <!-- Newsletter Section -->
-    <section class="py-20 bg-gradient-to-r from-indigo-600 to-purple-600">
+    <section id="contact" class="py-20 bg-gradient-to-r from-indigo-600 to-purple-600">
       <div class="container mx-auto px-6 text-center">
         <h2 class="text-3xl font-bold text-white mb-4">Tetap Terhubung</h2>
         <p class="text-indigo-100 mb-8">Dapatkan informasi terbaru tentang PKL dan pengumuman penting</p>
@@ -293,16 +346,43 @@
         <div class="grid md:grid-cols-4 gap-8">
           <div>
             <div class="flex items-center gap-3 mb-4">
-              <div class="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center"><svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg></div>
+              <div class="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>
+              </div>
               <span class="text-xl font-bold">Monitoring PKL</span>
             </div>
             <p class="text-gray-400 text-sm">Platform monitoring PKL terintegrasi untuk SMKN 1 Subang.</p>
           </div>
-          <div><h4 class="font-semibold mb-4">Tentang</h4><ul class="space-y-2 text-gray-400 text-sm"><li><a href="#" class="hover:text-white transition">Tentang Kami</a></li><li><a href="#" class="hover:text-white transition">Fitur</a></li><li><a href="#" class="hover:text-white transition">Karir</a></li></ul></div>
-          <div><h4 class="font-semibold mb-4">Bantuan</h4><ul class="space-y-2 text-gray-400 text-sm"><li><a href="#" class="hover:text-white transition">Panduan</a></li><li><a href="#" class="hover:text-white transition">FAQ</a></li><li><a href="#" class="hover:text-white transition">Kontak</a></li></ul></div>
-          <div><h4 class="font-semibold mb-4">Kontak</h4><ul class="space-y-2 text-gray-400 text-sm"><li>📞 (0260) 123456</li><li>✉️ info@smkn1subang.sch.id</li><li>📍 Jl. Pendidikan No.1, Subang</li></ul></div>
+          <div>
+            <h4 class="font-semibold mb-4">Tentang</h4>
+            <ul class="space-y-2 text-gray-400 text-sm">
+              <li><button @click="scrollTo('home')" class="hover:text-white transition">Tentang Kami</button></li>
+              <li><button @click="scrollTo('features')" class="hover:text-white transition">Fitur</button></li>
+              <li><a href="#" class="hover:text-white transition">Karir</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="font-semibold mb-4">Bantuan</h4>
+            <ul class="space-y-2 text-gray-400 text-sm">
+              <li><a href="#" class="hover:text-white transition">Panduan</a></li>
+              <li><button @click="scrollTo('faq')" class="hover:text-white transition">FAQ</button></li>
+              <li><button @click="scrollTo('contact')" class="hover:text-white transition">Kontak</button></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="font-semibold mb-4">Kontak</h4>
+            <ul class="space-y-2 text-gray-400 text-sm">
+              <li>📞 (0260) 123456</li>
+              <li>✉️ info@smkn1subang.sch.id</li>
+              <li>📍 Jl. Pendidikan No.1, Subang</li>
+            </ul>
+          </div>
         </div>
-        <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm"><p>&copy; 2024 Monitoring PKL SMKN 1 Subang. All rights reserved.</p></div>
+        <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
+          <p>&copy; 2024 Monitoring PKL SMKN 1 Subang. All rights reserved.</p>
+        </div>
       </div>
     </footer>
   </div>
@@ -311,28 +391,28 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import {
-  MapPinIcon, ClockIcon, DocumentTextIcon, ChartBarIcon,
-  UserGroupIcon, ShieldCheckIcon, BellIcon, CloudArrowUpIcon,
-  AcademicCapIcon, BuildingOffice2Icon, ClipboardDocumentListIcon
+  MapPinIcon, DocumentTextIcon, ChartBarIcon,
+  UserGroupIcon, ShieldCheckIcon, BellIcon
 } from '@heroicons/vue/24/outline'
 
 const scrolled = ref(false)
 const mobileMenuOpen = ref(false)
 
 const menuItems = [
-  { href: '#home', label: 'Beranda' },
-  { href: '#features', label: 'Fitur' },
-  { href: '#testimonials', label: 'Testimoni' },
-  { href: '#pricing', label: 'Paket' },
-  { href: '#contact', label: 'Kontak' }
+  { href: 'home', label: 'Beranda' },
+  { href: 'features', label: 'Fitur' },
+  { href: 'testimonials', label: 'Testimoni' },
+  { href: 'pricing', label: 'Paket' },
+  { href: 'faq', label: 'FAQ' },
+  { href: 'contact', label: 'Kontak' }
 ]
 
-const stats = [
+const stats = ref([
   { label: 'Siswa Terdaftar', value: '500' },
   { label: 'Perusahaan Mitra', value: '50' },
   { label: 'Logbook Tercatat', value: '1000' },
   { label: 'User Aktif', value: '600' }
-]
+])
 
 const features = [
   { title: 'Absensi Real-time', description: 'Absensi dengan GPS dan validasi radius perusahaan, otomatis terdeteksi.', icon: MapPinIcon },
@@ -374,16 +454,46 @@ const faqs = ref([
   { question: 'Bagaimana cara reset password?', answer: 'Klik lupa password pada halaman login, ikuti instruksi yang dikirim ke email.', open: false }
 ])
 
-const handleScroll = () => { scrolled.value = window.scrollY > 50 }
+// Smooth scroll function
+const scrollTo = (sectionId) => {
+  const element = document.getElementById(sectionId)
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    mobileMenuOpen.value = false
+  }
+}
 
-onMounted(() => { window.addEventListener('scroll', handleScroll) })
-onUnmounted(() => { window.removeEventListener('scroll', handleScroll) })
+const handleScroll = () => {
+  scrolled.value = window.scrollY > 50
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
 </script>
 
 <style scoped>
-@keyframes blob { 0% { transform: translate(0px, 0px) scale(1); } 33% { transform: translate(30px, -50px) scale(1.1); } 66% { transform: translate(-20px, 20px) scale(0.9); } 100% { transform: translate(0px, 0px) scale(1); } }
-@keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+@keyframes blob {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
 
 .animate-blob { animation: blob 7s infinite; }
 .animation-delay-2000 { animation-delay: 2s; }
@@ -394,4 +504,10 @@ onUnmounted(() => { window.removeEventListener('scroll', handleScroll) })
 .animation-delay-300 { animation-delay: 0.3s; }
 .animation-delay-400 { animation-delay: 0.4s; }
 .animate-float { animation: float 3s ease-in-out infinite; }
+
+@media (max-width: 768px) {
+  .animate-fade-in-up { animation-duration: 0.4s; }
+  .text-5xl { font-size: 2.5rem; }
+  .text-4xl { font-size: 2rem; }
+}
 </style>
