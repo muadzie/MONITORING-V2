@@ -19,7 +19,15 @@ export const useAuthStore = defineStore('auth', {
       try {
         const response = await axios.post('/login', credentials)
         console.log('Login response:', response.data)
-        
+        console.log('Full response:', response)  // ← Tambahkan ini
+        console.log('Response data:', response.data)  // ← Tambahkan ini
+        console.log('Token:', response.data.token)  // ← Tambahkan ini
+       // Simpan token dan user
+        if (response.data.token) {
+            localStorage.setItem('token', response.data.token)
+            localStorage.setItem('user', JSON.stringify(response.data.user))
+            return response.data
+        }
         this.user = response.data.user
         this.token = response.data.token
         // Ambil role sebagai string, bukan object

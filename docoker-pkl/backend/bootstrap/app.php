@@ -14,9 +14,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+    $middleware->append(App\Http\Middleware\Cors::class);
     $middleware->api(prepend: [
         \App\Http\Middleware\ForceJsonResponse::class,
         \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+        
     ]);
     
     $middleware->validateCsrfTokens(except: [
