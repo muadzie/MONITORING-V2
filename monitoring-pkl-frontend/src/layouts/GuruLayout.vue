@@ -25,14 +25,22 @@
         <router-link to="/guru/monitoring" class="flex items-center gap-3 px-4 py-3 rounded-xl mb-1 text-gray-600 hover:bg-gray-100">
           <UserGroupIcon class="w-5 h-5" /><span>Monitoring Siswa</span>
         </router-link>
+        <router-link to="/guru/attendance-monitoring" class="flex items-center gap-3 px-4 py-3 rounded-xl mb-1 text-gray-600 hover:bg-gray-100">
+  <ClipboardDocumentListIcon class="w-5 h-5" />
+  <span>Monitoring Absensi</span>
+</router-link>
         <router-link to="/guru/logbook-review" class="flex items-center gap-3 px-4 py-3 rounded-xl mb-1 text-gray-600 hover:bg-gray-100">
           <BookOpenIcon class="w-5 h-5" /><span>Review Logbook</span>
         </router-link>
         <router-link to="/guru/permissions" class="flex items-center gap-3 px-4 py-3 rounded-xl mb-1 text-gray-600 hover:bg-gray-100">
           <DocumentTextIcon class="w-5 h-5" /><span>Approval Izin</span>
         </router-link>
-        <router-link to="/guru/reports" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100">
-          <DocumentChartBarIcon class="w-5 h-5" /><span>Laporan PKL</span>
+        <!-- MENU BARU: Review Laporan PKL -->
+        <router-link to="/guru/report-review" class="flex items-center gap-3 px-4 py-3 rounded-xl mb-1 text-gray-600 hover:bg-gray-100">
+          <DocumentChartBarIcon class="w-5 h-5" /><span>Review Laporan PKL</span>
+        </router-link>
+        <router-link to="/guru/assessment" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100">
+          <ClipboardDocumentListIcon class="w-5 h-5" /><span>Penilaian PKL</span>
         </router-link>
       </nav>
       <div class="absolute bottom-0 left-0 right-0 p-4 border-t bg-white">
@@ -57,10 +65,23 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
-import { HomeIcon, UserGroupIcon, BookOpenIcon, DocumentTextIcon, DocumentChartBarIcon, ArrowRightOnRectangleIcon } from '@heroicons/vue/24/outline'
+import { HomeIcon, UserGroupIcon, BookOpenIcon, DocumentTextIcon, DocumentChartBarIcon, ClipboardDocumentListIcon, ArrowRightOnRectangleIcon } from '@heroicons/vue/24/outline'
 
 const route = useRoute(), router = useRouter(), authStore = useAuthStore()
-const pageTitle = computed(() => ({ '/guru/dashboard': 'Dashboard', '/guru/monitoring': 'Monitoring Siswa', '/guru/logbook-review': 'Review Logbook', '/guru/permissions': 'Approval Izin', '/guru/reports': 'Laporan PKL' }[route.path] || 'Dashboard'))
-const pageDescription = computed(() => ({ '/guru/dashboard': 'Ringkasan aktivitas bimbingan PKL', '/guru/monitoring': 'Pantau aktivitas dan progres siswa' }[route.path] || ''))
+const pageTitle = computed(() => ({ 
+  '/guru/dashboard': 'Dashboard', 
+  '/guru/monitoring': 'Monitoring Siswa', 
+  '/guru/logbook-review': 'Review Logbook', 
+  '/guru/permissions': 'Approval Izin', 
+  '/guru/report-review': 'Review Laporan PKL',
+  '/guru/assessment': 'Penilaian PKL'
+}[route.path] || 'Dashboard'))
+
+const pageDescription = computed(() => ({ 
+  '/guru/dashboard': 'Ringkasan aktivitas bimbingan PKL', 
+  '/guru/monitoring': 'Pantau aktivitas dan progres siswa',
+  '/guru/report-review': 'Review dan download laporan PKL siswa'
+}[route.path] || ''))
+
 const logout = async () => { await authStore.logout(); router.push('/login') }
 </script>

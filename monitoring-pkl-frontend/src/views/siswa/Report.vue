@@ -80,6 +80,9 @@
               <div>
                 <p class="font-medium">Laporan sebelumnya</p>
                 <p class="text-xs text-gray-500">Upload: {{ formatDate(existingReport.created_at) }}</p>
+                <p class="text-xs" :class="getStatusClass(existingReport.status)">
+                  Status: {{ getStatusText(existingReport.status) }}
+                </p>
               </div>
             </div>
             <a :href="existingReport.file_url" target="_blank" class="text-indigo-600 hover:text-indigo-800 text-sm">Lihat Laporan</a>
@@ -117,7 +120,7 @@
           <ul class="mt-2 space-y-1 text-sm text-blue-700">
             <li>• File harus dalam format PDF, DOC, atau DOCX</li>
             <li>• Ukuran file maksimal 10MB</li>
-            <li>• Laporan harus sudah disetujui oleh pembimbing</li>
+            <li>• Laporan akan direview oleh guru pembimbing</li>
             <li>• Batas akhir upload laporan: 31 Maret 2026</li>
           </ul>
         </div>
@@ -149,7 +152,22 @@ const formatFileSize = (bytes) => {
 }
 
 const formatDate = (date) => {
+  if (!date) return '-'
   return new Date(date).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
+}
+
+const getStatusText = (status) => {
+  const map = { pending: 'Menunggu Review', approved: 'Disetujui', rejected: 'Ditolak' }
+  return map[status] || status || 'Menunggu'
+}
+
+const getStatusClass = (status) => {
+  const map = {
+    pending: 'text-yellow-600',
+    approved: 'text-green-600',
+    rejected: 'text-red-600'
+  }
+  return map[status] || 'text-gray-600'
 }
 
 const handleFileSelect = (e) => {
@@ -164,10 +182,15 @@ const handleDrop = (e) => {
 }
 
 const validateAndSetFile = (file) => {
+  // Validasi ekstensi file (lebih fleksibel)
+  const allowedExtensions = ['pdf', 'doc', 'docx']
+  const fileExtension = file.name.split('.').pop().toLowerCase()
+  
+  // Validasi tipe MIME
   const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
   const maxSize = 10 * 1024 * 1024 // 10MB
 
-  if (!allowedTypes.includes(file.type)) {
+  if (!allowedExtensions.includes(fileExtension) && !allowedTypes.includes(file.type)) {
     toast.error('Format file tidak didukung. Gunakan PDF, DOC, atau DOCX')
     return
   }
@@ -178,24 +201,48 @@ const validateAndSetFile = (file) => {
   }
 
   selectedFile.value = file
+  console.log('File selected:', file.name, file.type, file.size)
 }
 
 const uploadReport = async () => {
-  if (!selectedFile.value) return
+  if (!selectedFile.value) {
+    toast.error('Pilih file terlebih dahulu')
+    return
+  }
   
   uploading.value = true
   const formData = new FormData()
   formData.append('report', selectedFile.value)
   
+  console.log('Uploading file:', selectedFile.value.name)
+  console.log('File type:', selectedFile.value.type)
+  console.log('File size:', selectedFile.value.size)
+  
   try {
     const response = await axios.post('/siswa/report/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { 
+        'Content-Type': 'multipart/form-data'
+      }
     })
+    
+    console.log('Upload success:', response.data)
     toast.success('Laporan berhasil diupload')
     selectedFile.value = null
     await loadReport()
   } catch (error) {
-    toast.error(error.response?.data?.message || 'Gagal mengupload laporan')
+    console.error('Upload error:', error)
+    console.error('Response:', error.response?.data)
+    
+    let errorMessage = 'Gagal mengupload laporan'
+    if (error.response?.data?.message) {
+      errorMessage = error.response.data.message
+    }
+    if (error.response?.data?.errors) {
+      const errors = error.response.data.errors
+      errorMessage = Object.values(errors).flat().join(', ')
+    }
+    
+    toast.error(errorMessage)
   } finally {
     uploading.value = false
   }
@@ -210,7 +257,8 @@ const deleteReport = async () => {
     toast.success('Laporan berhasil dihapus')
     await loadReport()
   } catch (error) {
-    toast.error('Gagal menghapus laporan')
+    console.error('Delete error:', error)
+    toast.error(error.response?.data?.message || 'Gagal menghapus laporan')
   } finally {
     deleting.value = false
   }
@@ -219,16 +267,29 @@ const deleteReport = async () => {
 const loadReport = async () => {
   try {
     const response = await axios.get('/siswa/report')
-    if (response.data) {
+    console.log('Load report response:', response.data)
+    
+    if (response.data && response.data.id) {
       existingReport.value = response.data
       lastUpload.value = formatDate(response.data.created_at)
-      reportStatus.value = { text: 'Sudah Upload', color: 'text-green-600' }
+      
+      // Update status berdasarkan response dari backend
+      const status = response.data.status || 'pending'
+      const statusMap = {
+        pending: { text: 'Menunggu Review', color: 'text-yellow-600' },
+        approved: { text: 'Disetujui', color: 'text-green-600' },
+        rejected: { text: 'Ditolak', color: 'text-red-600' }
+      }
+      reportStatus.value = statusMap[status] || { text: 'Sudah Upload', color: 'text-green-600' }
     } else {
       existingReport.value = null
       reportStatus.value = { text: 'Belum Upload', color: 'text-red-600' }
+      lastUpload.value = ''
     }
   } catch (error) {
     console.error('Failed to load report:', error)
+    existingReport.value = null
+    reportStatus.value = { text: 'Belum Upload', color: 'text-red-600' }
   }
 }
 

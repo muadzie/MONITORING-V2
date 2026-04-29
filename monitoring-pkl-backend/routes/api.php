@@ -43,8 +43,8 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('roles', App\Http\Controllers\Api\Admin\RoleController::class);
     
     // ---------------------- COMPANY MANAGEMENT -----------------
+    // PERBAIKAN: Gunakan resource agar semua method (GET, POST, PUT, DELETE) tersedia
     Route::apiResource('companies', App\Http\Controllers\Api\Admin\CompanyController::class);
-    Route::get('/companies', [App\Http\Controllers\Api\Admin\CompanyController::class, 'index']);
     
     // ---------------------- CLASS MANAGEMENT -------------------
     Route::apiResource('classes', App\Http\Controllers\Api\Admin\ClassController::class);
@@ -95,6 +95,14 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
 });
 
 // ================================================================
+// ===================== PUBLIC COMPANIES ROUTES (untuk semua role) =====
+// ================================================================
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/companies', [App\Http\Controllers\Api\Admin\CompanyController::class, 'index']);
+    Route::get('/companies/{id}', [App\Http\Controllers\Api\Admin\CompanyController::class, 'show']);
+});
+
+// ================================================================
 // ===================== GURU ROUTES ============================
 // ================================================================
 Route::prefix('guru')->middleware('auth:sanctum')->group(function () {
@@ -124,11 +132,19 @@ Route::prefix('guru')->middleware('auth:sanctum')->group(function () {
     Route::get('/assessments', [App\Http\Controllers\Api\Guru\AssessmentController::class, 'index']);
     Route::post('/assessments', [App\Http\Controllers\Api\Guru\AssessmentController::class, 'store']);
     Route::put('/assessments/{id}', [App\Http\Controllers\Api\Guru\AssessmentController::class, 'update']);
+
+    // Attendance Monitoring
+    Route::get('/attendances', [App\Http\Controllers\Api\Guru\AttendanceController::class, 'index']);
+Route::get('/attendances/summary', [App\Http\Controllers\Api\Guru\AttendanceController::class, 'summary']);
+ Route::get('/students', [App\Http\Controllers\Api\Guru\AttendanceController::class, 'students']);
     
     // Reports
     Route::get('/reports/attendance', [App\Http\Controllers\Api\Guru\ReportController::class, 'attendance']);
     Route::get('/reports/logbook', [App\Http\Controllers\Api\Guru\ReportController::class, 'logbook']);
     Route::get('/reports/assessment', [App\Http\Controllers\Api\Guru\ReportController::class, 'assessment']);
+    Route::get('/reports/pending', [App\Http\Controllers\Api\Guru\ReportReviewController::class, 'index']);
+    Route::put('/reports/{id}/approve', [App\Http\Controllers\Api\Guru\ReportReviewController::class, 'approve']);
+    Route::put('/reports/{id}/reject', [App\Http\Controllers\Api\Guru\ReportReviewController::class, 'reject']);
 });
 
 // ================================================================
@@ -165,14 +181,6 @@ Route::prefix('siswa')->middleware('auth:sanctum')->group(function () {
     // Company Info
     Route::get('/company', [App\Http\Controllers\Api\Siswa\CompanyController::class, 'index']);
     Route::get('/company/location', [App\Http\Controllers\Api\Siswa\CompanyController::class, 'location']);
-});
-
-// ================================================================
-// ===================== COMPANIES ROUTES =======================
-// ================================================================
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/companies', [App\Http\Controllers\Api\Admin\CompanyController::class, 'index']);
-    Route::get('/companies/{id}', [App\Http\Controllers\Api\Admin\CompanyController::class, 'show']);
 });
 
 // ================================================================

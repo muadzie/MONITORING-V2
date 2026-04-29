@@ -40,6 +40,9 @@
             <div class="mt-2 h-1 bg-gray-200 rounded-full overflow-hidden">
               <div class="h-full bg-indigo-600 rounded-full" :style="{ width: distancePercentage + '%' }"></div>
             </div>
+            <div v-if="!isWithinRadius && distance > 0" class="mt-2 text-xs text-red-500">
+              ⚠️ Anda berada di luar radius! Jarak {{ distance }}m > {{ radius }}m
+            </div>
           </div>
         </div>
       </div>
@@ -64,14 +67,23 @@
       <div class="overflow-x-auto">
         <table class="w-full">
           <thead class="bg-gray-50">
-            <tr><th class="px-4 py-3 text-left text-xs font-semibold">Tanggal</th><th class="px-4 py-3 text-left text-xs font-semibold">Check In</th><th class="px-4 py-3 text-left text-xs font-semibold">Check Out</th><th class="px-4 py-3 text-left text-xs font-semibold">Status</th></tr>
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-semibold">Tanggal</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold">Check In</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold">Check Out</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold">Status</th>
+            </tr>
           </thead>
           <tbody class="divide-y">
             <tr v-for="item in history" :key="item.id">
               <td class="px-4 py-3 text-sm">{{ formatDate(item.date) }}</td>
               <td class="px-4 py-3 text-sm">{{ item.check_in || '-' }}</td>
               <td class="px-4 py-3 text-sm">{{ item.check_out || '-' }}</td>
-              <td class="px-4 py-3"><span :class="getStatusClass(item.status)" class="px-2 py-1 rounded-full text-xs">{{ getStatusText(item.status) }}</span></td>
+              <td class="px-4 py-3">
+                <span :class="getStatusClass(item.status)" class="px-2 py-1 rounded-full text-xs">
+                  {{ getStatusText(item.status) }}
+                </span>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -96,10 +108,16 @@ const loading = ref(false)
 const statusText = ref('Belum Absen')
 const currentDate = ref(new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }))
 const companyName = ref('')
+const companyLat = ref(null)
+const companyLng = ref(null)
 const radius = ref(100)
 const distance = ref(0)
 const history = ref([])
 let watchId = null
+let map = null
+let userMarker = null
+let companyMarker = null
+let radiusCircle = null
 
 // Status icon
 const statusIcon = computed(() => {
@@ -112,6 +130,11 @@ const statusIcon = computed(() => {
 const distancePercentage = computed(() => {
   if (distance.value >= radius.value) return 100
   return (distance.value / radius.value) * 100
+})
+
+// Check if within radius
+const isWithinRadius = computed(() => {
+  return distance.value <= radius.value
 })
 
 // Helper functions
@@ -135,9 +158,9 @@ const formatDate = (date) => {
   return new Date(date).toLocaleDateString('id-ID')
 }
 
-// Calculate distance between two coordinates
+// Calculate distance between two coordinates (Haversine formula)
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
-  const R = 6371000
+  const R = 6371000 // Earth radius in meters
   const φ1 = lat1 * Math.PI / 180
   const φ2 = lat2 * Math.PI / 180
   const Δφ = (lat2 - lat1) * Math.PI / 180
@@ -155,26 +178,64 @@ const getPosition = () => {
     }
     navigator.geolocation.getCurrentPosition(resolve, reject, {
       enableHighAccuracy: true,
-      timeout: 10000
+      timeout: 10000,
+      maximumAge: 0
     })
   })
 }
 
+// Load company data from API
+const loadCompanyInfo = async () => {
+  try {
+    const response = await axios.get('/siswa/company')
+    if (response.data && response.data.company) {
+      const company = response.data.company
+      companyName.value = company.name
+      companyLat.value = company.latitude
+      companyLng.value = company.longitude
+      radius.value = company.radius || 100
+      console.log('Company loaded:', companyName.value, 'Radius:', radius.value)
+    }
+  } catch (error) {
+    console.error('Load company error:', error)
+    // Fallback ke auth store
+    const company = authStore.user?.company
+    if (company) {
+      companyName.value = company.name
+      companyLat.value = company.latitude
+      companyLng.value = company.longitude
+      radius.value = company.radius || 100
+    }
+  }
+}
+
 // Check In
 const checkIn = async () => {
+  if (loading.value) return
+  
   loading.value = true
   try {
     const position = await getPosition()
+    console.log('Position:', position.coords.latitude, position.coords.longitude)
+    
     const response = await axios.post('/siswa/attendance/check-in', {
       latitude: position.coords.latitude,
       longitude: position.coords.longitude
     })
-    toast.success(response.data.message || 'Check in berhasil!')
-    await loadTodayStatus()
-    await loadHistory()
+    
+    console.log('Check-in response:', response.data)
+    
+    if (response.data.success || response.data.message) {
+      toast.success(response.data.message || 'Check in berhasil!')
+      await loadTodayStatus()
+      await loadHistory()
+    } else {
+      toast.error(response.data.message || 'Check in gagal')
+    }
   } catch (error) {
     console.error('Check in error:', error)
-    toast.error(error.response?.data?.message || 'Check in gagal')
+    const message = error.response?.data?.message || 'Check in gagal'
+    toast.error(message)
   } finally {
     loading.value = false
   }
@@ -182,19 +243,31 @@ const checkIn = async () => {
 
 // Check Out
 const checkOut = async () => {
+  if (loading.value) return
+  
   loading.value = true
   try {
     const position = await getPosition()
+    console.log('Position:', position.coords.latitude, position.coords.longitude)
+    
     const response = await axios.post('/siswa/attendance/check-out', {
       latitude: position.coords.latitude,
       longitude: position.coords.longitude
     })
-    toast.success(response.data.message || 'Check out berhasil!')
-    await loadTodayStatus()
-    await loadHistory()
+    
+    console.log('Check-out response:', response.data)
+    
+    if (response.data.success || response.data.message) {
+      toast.success(response.data.message || 'Check out berhasil!')
+      await loadTodayStatus()
+      await loadHistory()
+    } else {
+      toast.error(response.data.message || 'Check out gagal')
+    }
   } catch (error) {
     console.error('Check out error:', error)
-    toast.error(error.response?.data?.message || 'Check out gagal')
+    const message = error.response?.data?.message || 'Check out gagal'
+    toast.error(message)
   } finally {
     loading.value = false
   }
@@ -204,11 +277,28 @@ const checkOut = async () => {
 const loadTodayStatus = async () => {
   try {
     const response = await axios.get('/siswa/attendance/today')
-    hasCheckedIn.value = response.data.has_checked_in
-    hasCheckedOut.value = response.data.has_checked_out
-    statusText.value = hasCheckedOut.value ? 'Selesai' : (hasCheckedIn.value ? 'Sudah Check In' : 'Belum Absen')
+    console.log('Today status:', response.data)
+    
+    if (response.data.success) {
+      hasCheckedIn.value = response.data.has_checked_in || false
+      hasCheckedOut.value = response.data.has_checked_out || false
+    } else {
+      hasCheckedIn.value = response.data.has_checked_in || false
+      hasCheckedOut.value = response.data.has_checked_out || false
+    }
+    
+    if (hasCheckedOut.value) {
+      statusText.value = 'Selesai'
+    } else if (hasCheckedIn.value) {
+      statusText.value = 'Sudah Check In'
+    } else {
+      statusText.value = 'Belum Absen'
+    }
   } catch (error) {
     console.error('Load today status error:', error)
+    hasCheckedIn.value = false
+    hasCheckedOut.value = false
+    statusText.value = 'Belum Absen'
   }
 }
 
@@ -216,21 +306,26 @@ const loadTodayStatus = async () => {
 const loadHistory = async () => {
   try {
     const response = await axios.get('/siswa/attendance/history')
-    history.value = response.data
+    console.log('History response:', response.data)
+    
+    if (response.data.success) {
+      history.value = response.data.data || []
+    } else {
+      history.value = response.data || []
+    }
   } catch (error) {
     console.error('Load history error:', error)
+    history.value = []
   }
 }
 
 // Initialize map
 const initMap = () => {
-  const company = authStore.user?.company
-  if (!company) return
+  if (!companyLat.value || !companyLng.value) {
+    console.log('No company coordinates, waiting...')
+    return
+  }
 
-  companyName.value = company.name
-  radius.value = company.radius
-
-  // Check if map container exists
   const mapContainer = document.getElementById('attendance-map')
   if (!mapContainer) {
     console.error('Map container not found')
@@ -246,33 +341,41 @@ const initMap = () => {
       link.rel = 'stylesheet'
       link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
       document.head.appendChild(link)
-      setTimeout(() => createMap(company), 100)
+      setTimeout(() => createMap(), 100)
     }
     document.head.appendChild(script)
   } else {
-    createMap(company)
+    createMap()
   }
 }
 
-const createMap = (company) => {
+const createMap = () => {
   const mapContainer = document.getElementById('attendance-map')
-  if (!mapContainer) return
+  if (!mapContainer || !companyLat.value || !companyLng.value) return
 
-  const map = window.L.map(mapContainer).setView([company.latitude, company.longitude], 15)
+  if (map) map.remove()
+
+  map = window.L.map(mapContainer).setView([companyLat.value, companyLng.value], 16)
   
   window.L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
+    subdomains: 'abcd',
+    maxZoom: 19
   }).addTo(map)
 
   // Company marker
-  window.L.marker([company.latitude, company.longitude]).addTo(map).bindPopup(company.name).openPopup()
+  companyMarker = window.L.marker([companyLat.value, companyLng.value])
+    .addTo(map)
+    .bindPopup(`<b>${companyName.value}</b><br>Lokasi PKL Anda`)
+    .openPopup()
   
   // Radius circle
-  window.L.circle([company.latitude, company.longitude], {
-    radius: company.radius,
+  radiusCircle = window.L.circle([companyLat.value, companyLng.value], {
+    radius: radius.value,
     color: '#10b981',
     fillColor: '#10b981',
-    fillOpacity: 0.1
+    fillOpacity: 0.1,
+    weight: 2
   }).addTo(map)
 
   // Watch user position
@@ -283,42 +386,56 @@ const createMap = (company) => {
         const userLng = pos.coords.longitude
         
         // Calculate distance
-        const dist = calculateDistance(userLat, userLng, company.latitude, company.longitude)
+        const dist = calculateDistance(userLat, userLng, companyLat.value, companyLng.value)
         distance.value = Math.round(dist)
         
         // Add or update user marker
-        if (window.userMarker) {
-          window.userMarker.setLatLng([userLat, userLng])
+        if (userMarker) {
+          userMarker.setLatLng([userLat, userLng])
         } else {
-          window.userMarker = window.L.marker([userLat, userLng], {
-            icon: window.L.divIcon({
-              html: '<div style="background-color: #3b82f6; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.3);"></div>',
-              iconSize: [16, 16],
-              className: 'custom-marker'
-            })
-          }).addTo(map).bindPopup('Anda di sini').openPopup()
+          const customIcon = window.L.divIcon({
+            html: '<div style="background-color: #3b82f6; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.3);"></div>',
+            iconSize: [18, 18],
+            className: 'custom-marker'
+          })
+          userMarker = window.L.marker([userLat, userLng], { icon: customIcon })
+            .addTo(map)
+            .bindPopup('Anda di sini')
+            .openPopup()
         }
         
-        map.setView([userLat, userLng], 15)
+        // Center map on user if not too far
+        if (dist > radius.value * 2) {
+          map.setView([userLat, userLng], 14)
+        }
       },
       (err) => {
         console.error('Geolocation error:', err)
-        toast.error('Gagal mendapatkan lokasi. Pastikan GPS aktif.')
+        if (err.code === 1) {
+          toast.error('Izin lokasi ditolak. Aktifkan lokasi untuk absensi.')
+        } else {
+          toast.error('Gagal mendapatkan lokasi. Pastikan GPS aktif.')
+        }
       },
-      { enableHighAccuracy: true, maximumAge: 0 }
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
     )
   }
 }
 
-onMounted(() => {
-  loadTodayStatus()
-  loadHistory()
+onMounted(async () => {
+  await loadCompanyInfo()
+  await loadTodayStatus()
+  await loadHistory()
   setTimeout(() => initMap(), 500)
 })
 
 onUnmounted(() => {
   if (watchId) {
     navigator.geolocation.clearWatch(watchId)
+  }
+  if (map) {
+    map.remove()
+    map = null
   }
 })
 </script>

@@ -137,40 +137,40 @@
             <!-- Kolom Kiri -->
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nama Perusahaan</label>
-                <input v-model="form.name" type="text" class="w-full px-4 py-2.5 border rounded-lg" required>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nama Perusahaan <span class="text-red-500">*</span></label>
+                <input v-model="form.name" type="text" class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500" required>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
-                <textarea v-model="form.address" rows="3" class="w-full px-4 py-2.5 border rounded-lg" required></textarea>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Alamat <span class="text-red-500">*</span></label>
+                <textarea v-model="form.address" rows="3" class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500" required></textarea>
               </div>
               <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Latitude</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Latitude <span class="text-red-500">*</span></label>
                   <input v-model="form.latitude" type="number" step="any" class="w-full px-4 py-2.5 border rounded-lg bg-gray-50" readonly>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Longitude</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Longitude <span class="text-red-500">*</span></label>
                   <input v-model="form.longitude" type="number" step="any" class="w-full px-4 py-2.5 border rounded-lg bg-gray-50" readonly>
                 </div>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Radius (meter)</label>
-                <input v-model="form.radius" type="number" class="w-full px-4 py-2.5 border rounded-lg" required>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Radius (meter) <span class="text-red-500">*</span></label>
+                <input v-model="form.radius" type="number" min="10" class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500" required>
               </div>
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Telepon</label>
-                  <input v-model="form.phone" type="tel" class="w-full px-4 py-2.5 border rounded-lg">
+                  <input v-model="form.phone" type="tel" class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500">
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <input v-model="form.email" type="email" class="w-full px-4 py-2.5 border rounded-lg">
+                  <input v-model="form.email" type="email" class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500">
                 </div>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
-                <textarea v-model="form.description" rows="2" class="w-full px-4 py-2.5 border rounded-lg"></textarea>
+                <textarea v-model="form.description" rows="2" class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500"></textarea>
               </div>
             </div>
             
@@ -179,16 +179,16 @@
               <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Lokasi di Maps</label>
               <div ref="mapContainer" class="h-96 w-full rounded-lg border overflow-hidden bg-gray-100"></div>
               <div class="mt-3 flex gap-2">
-                <input v-model="searchAddress" type="text" placeholder="Cari alamat..." class="flex-1 px-3 py-2 border rounded-lg text-sm" @keyup.enter="searchLocation">
-                <button type="button" @click="searchLocation" class="px-3 py-2 bg-gray-100 rounded-lg">🔍 Cari</button>
-                <button type="button" @click="getCurrentLocation" class="px-3 py-2 bg-indigo-100 text-indigo-600 rounded-lg">📍 Lokasi Saya</button>
+                <input v-model="searchAddress" type="text" placeholder="Cari alamat..." class="flex-1 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500" @keyup.enter="searchLocation">
+                <button type="button" @click="searchLocation" class="px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition">🔍 Cari</button>
+                <button type="button" @click="getCurrentLocation" class="px-3 py-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-200 transition">📍 Lokasi Saya</button>
               </div>
             </div>
           </div>
 
           <div class="flex justify-end gap-3 mt-6 pt-4 border-t">
-            <button type="button" @click="closeModal" class="px-5 py-2.5 border rounded-lg">Batal</button>
-            <button type="submit" class="px-6 py-2.5 bg-indigo-600 text-white rounded-lg" :disabled="saving">
+            <button type="button" @click="closeModal" class="px-5 py-2.5 border rounded-lg hover:bg-gray-50 transition">Batal</button>
+            <button type="submit" class="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition" :disabled="saving">
               {{ saving ? 'Menyimpan...' : (isEdit ? 'Update' : 'Simpan') }}
             </button>
           </div>
@@ -376,13 +376,15 @@ const getCurrentLocation = () => {
   )
 }
 
-// CRUD Operations
+// CRUD Operations - SEMUA PAKAI /admin/companies
 const fetchCompanies = async () => {
   loading.value = true
   try {
-    const res = await axios.get('/companies')
+    const res = await axios.get('/admin/companies')
     companies.value = Array.isArray(res.data) ? res.data : (res.data.data || [])
+    console.log('Companies loaded:', companies.value.length)
   } catch (error) {
+    console.error('Fetch error:', error)
     toast.error('Gagal memuat data perusahaan')
     companies.value = []
   } finally {
@@ -439,39 +441,68 @@ const closeModal = () => {
 }
 
 const saveCompany = async () => {
+  // Validasi
+  if (!form.value.name) {
+    toast.error('Nama perusahaan harus diisi')
+    return
+  }
+  if (!form.value.address) {
+    toast.error('Alamat harus diisi')
+    return
+  }
+  if (!form.value.latitude || !form.value.longitude) {
+    toast.error('Pilih lokasi di maps terlebih dahulu')
+    return
+  }
+  if (!form.value.radius || form.value.radius < 10) {
+    toast.error('Radius minimal 10 meter')
+    return
+  }
+  
   saving.value = true
   try {
     const dataToSend = {
-      ...form.value,
+      name: form.value.name,
+      address: form.value.address,
       latitude: parseFloat(form.value.latitude),
-      longitude: parseFloat(form.value.longitude)
+      longitude: parseFloat(form.value.longitude),
+      radius: parseInt(form.value.radius),
+      phone: form.value.phone || null,
+      email: form.value.email || null,
+      description: form.value.description || null
     }
     
     if (isEdit.value) {
-      await axios.put(`/companies/${dataToSend.id}`, dataToSend)
+      // UPDATE - pakai /admin/companies/{id}
+      await axios.put(`/admin/companies/${form.value.id}`, dataToSend)
       toast.success('Perusahaan berhasil diupdate')
     } else {
-      await axios.post('/companies', dataToSend)
+      // CREATE - pakai /admin/companies
+      await axios.post('/admin/companies', dataToSend)
       toast.success('Perusahaan berhasil ditambahkan')
     }
     closeModal()
     await fetchCompanies()
   } catch (error) {
-    toast.error(error.response?.data?.message || 'Gagal menyimpan perusahaan')
+    console.error('Save error:', error)
+    const message = error.response?.data?.message || 'Gagal menyimpan perusahaan'
+    toast.error(message)
   } finally {
     saving.value = false
   }
 }
 
 const deleteCompany = async (company) => {
-  if (confirm(`Hapus perusahaan "${company.name}"?`)) {
-    try {
-      await axios.delete(`/companies/${company.id}`)
-      toast.success('Perusahaan berhasil dihapus')
-      await fetchCompanies()
-    } catch (error) {
-      toast.error('Gagal menghapus perusahaan')
-    }
+  if (!confirm(`Hapus perusahaan "${company.name}"?`)) return
+  
+  try {
+    // DELETE - pakai /admin/companies/{id}
+    await axios.delete(`/admin/companies/${company.id}`)
+    toast.success('Perusahaan berhasil dihapus')
+    await fetchCompanies()
+  } catch (error) {
+    console.error('Delete error:', error)
+    toast.error(error.response?.data?.message || 'Gagal menghapus perusahaan')
   }
 }
 

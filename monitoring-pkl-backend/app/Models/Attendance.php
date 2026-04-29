@@ -17,7 +17,15 @@ class Attendance extends Model
         'check_in' => 'datetime',
         'check_out' => 'datetime',
     ];
+      public function student()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
+     public function placement()
+    {
+        return $this->belongsTo(Placement::class, 'company_id');
+    }
     public function user()
     {
         return $this->belongsTo(User::class);

@@ -89,6 +89,7 @@ const routes = [
       { path: 'attendance', component: () => import('../views/siswa/Attendance.vue') },
       { path: 'logbook', component: () => import('../views/siswa/Logbook.vue') },
       { path: 'permission', component: () => import('../views/siswa/Permission.vue') },
+       { path: 'report', component: () => import('../views/siswa/Report.vue') },  
       { path: 'final-report', component: () => import('../views/siswa/FinalReport.vue') },
       { path: 'company', component: () => import('../views/siswa/CompanyInfo.vue') },
       { path: 'guide', component: () => import('../views/siswa/Guide.vue') },
@@ -106,7 +107,9 @@ const routes = [
     children: [
       { path: 'dashboard', component: () => import('../views/guru/Dashboard.vue') },
       { path: 'monitoring', component: () => import('../views/guru/Monitoring.vue') },
+      { path: 'attendance-monitoring', component: () => import('../views/guru/AttendanceMonitoring.vue') },
       { path: 'logbook-review', component: () => import('../views/guru/LogbookReview.vue') },
+      { path: 'report-review', component: () => import('../views/guru/ReportReview.vue') },
       { path: 'permissions', component: () => import('../views/guru/PermissionApproval.vue') },
       { path: 'assessment', component: () => import('../views/guru/Assessment.vue') },
       { path: 'reports', component: () => import('../views/guru/Reports.vue') },
