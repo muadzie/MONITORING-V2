@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api\Guru;
 
 use App\Http\Controllers\Controller;
 use App\Models\Permission;
+use App\Models\Attendance;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class PermissionController extends Controller
 {
@@ -85,6 +87,11 @@ class PermissionController extends Controller
             $permission->feedback = $request->feedback;
             $permission->save();
             
+            // ============================================================
+            // OTOMATIS BUAT ATAU UPDATE ATTENDANCE DENGAN STATUS SAKIT/IZIN
+            // ============================================================
+            $this->createOrUpdateAttendance($permission);
+            
             return response()->json([
                 'success' => true,
                 'message' => 'Izin berhasil disetujui'
@@ -109,6 +116,9 @@ class PermissionController extends Controller
             $permission->feedback = $request->feedback;
             $permission->save();
             
+            // Hapus attendance jika ada (opsional, biarkan sebagai catatan)
+            // $this->removeAttendance($permission);
+            
             return response()->json([
                 'success' => true,
                 'message' => 'Izin ditolak'
@@ -118,6 +128,64 @@ class PermissionController extends Controller
                 'success' => false,
                 'message' => 'Gagal menolak: ' . $e->getMessage()
             ], 500);
+        }
+    }
+    
+    // ============================================================
+    // FUNGSI UNTUK MEMBUAT ATTENDANCE DARI PERMISSION
+    // ============================================================
+    private function createOrUpdateAttendance($permission)
+    {
+        try {
+            // Cek apakah sudah ada attendance untuk tanggal ini
+            $attendance = Attendance::where('user_id', $permission->user_id)
+                ->where('date', $permission->date)
+                ->first();
+            
+            $status = $permission->type === 'sick' ? 'sick' : 'permit';
+            
+            if ($attendance) {
+                // Update status jika sudah ada
+                $attendance->status = $status;
+                $attendance->notes = 'Izin/Sakit: ' . $permission->reason;
+                $attendance->save();
+                
+                \Log::info('Attendance updated for permission: ' . $permission->id);
+            } else {
+                // Buat attendance baru
+                $user = User::find($permission->user_id);
+                
+                $newAttendance = new Attendance();
+                $newAttendance->user_id = $permission->user_id;
+                $newAttendance->date = $permission->date;
+                $newAttendance->status = $status;
+                $newAttendance->notes = 'Izin/Sakit: ' . $permission->reason;
+                $newAttendance->is_valid_location = false; // Tidak perlu validasi lokasi
+                $newAttendance->company_id = $user->company_id ?? 1;
+                $newAttendance->save();
+                
+                \Log::info('Attendance created for permission: ' . $permission->id);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to create attendance for permission: ' . $e->getMessage());
+        }
+    }
+    
+    // Opsional: Hapus attendance jika izin ditolak
+    private function removeAttendance($permission)
+    {
+        try {
+            $attendance = Attendance::where('user_id', $permission->user_id)
+                ->where('date', $permission->date)
+                ->whereIn('status', ['sick', 'permit'])
+                ->first();
+            
+            if ($attendance) {
+                $attendance->delete();
+                \Log::info('Attendance removed for permission: ' . $permission->id);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to remove attendance: ' . $e->getMessage());
         }
     }
 }

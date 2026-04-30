@@ -16,7 +16,7 @@
             <p class="text-xs text-gray-500">SMKN 1 Subang</p>
           </div>
         </div>
-        <button @click="sidebarCollapsed = !sidebarCollapsed" class="lg:hidden text-gray-500">
+        <button @click="toggleSidebar" class="lg:hidden text-gray-500">
           <XMarkIcon class="w-6 h-6" />
         </button>
       </div>
@@ -52,10 +52,10 @@
         <div class="mb-6">
           <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">AKTIVITAS PKL</p>
           <router-link to="/siswa/report"
-  class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 transition mb-1">
-  <DocumentArrowUpIcon class="w-5 h-5" />
-  <span class="text-sm font-medium">Upload Laporan</span>
-</router-link>
+            class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 transition mb-1">
+            <DocumentArrowUpIcon class="w-5 h-5" />
+            <span class="text-sm font-medium">Upload Laporan</span>
+          </router-link>
           <router-link to="/siswa/attendance"
             class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 transition mb-1">
             <MapPinIcon class="w-5 h-5" />
@@ -99,7 +99,7 @@
     </aside>
 
     <!-- Overlay -->
-    <div v-if="!sidebarCollapsed" @click="sidebarCollapsed = true" class="fixed inset-0 bg-black/50 z-30 lg:hidden"></div>
+    <div v-if="!sidebarCollapsed" @click="toggleSidebar" class="fixed inset-0 bg-black/50 z-30 lg:hidden"></div>
 
     <!-- Main Content -->
     <div class="transition-all duration-300 lg:ml-72">
@@ -107,7 +107,7 @@
       <header class="sticky top-0 z-30 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div class="flex items-center justify-between px-6 py-4">
           <div class="flex items-center gap-4">
-            <button @click="sidebarCollapsed = !sidebarCollapsed" class="p-2 rounded-lg hover:bg-gray-100 transition">
+            <button @click="toggleSidebar" class="p-2 rounded-lg hover:bg-gray-100 transition">
               <Bars3Icon class="w-5 h-5 text-gray-600" />
             </button>
             <div>
@@ -116,26 +116,63 @@
             </div>
           </div>
           <div class="flex items-center gap-3">
-            <div class="relative">
-              <button @click="notifOpen = !notifOpen" class="relative p-2 rounded-xl hover:bg-gray-100 transition">
-                <BellIcon class="w-5 h-5 text-gray-600" />
-                <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-              </button>
+            <!-- Search Bar -->
+            <div class="hidden md:flex items-center bg-gray-100 rounded-xl px-4 py-2">
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+              <input type="text" placeholder="Cari..." class="bg-transparent border-none focus:outline-none text-sm ml-2 w-48">
             </div>
+
+            <!-- Notification Bell -->
             <div class="relative">
-              <button @click="userMenuOpen = !userMenuOpen" class="flex items-center gap-2 p-1 rounded-xl hover:bg-gray-100 transition">
+              <button @click="toggleNotif" class="relative p-2 rounded-xl hover:bg-gray-100 transition">
+                <BellIcon class="w-5 h-5 text-gray-600" />
+                <span v-if="unreadCount > 0" class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              </button>
+              
+              <!-- Notification Dropdown -->
+              <div v-if="showNotif" class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border overflow-hidden z-50">
+                <div class="p-3 border-b bg-gradient-to-r from-green-50 to-teal-50">
+                  <p class="font-semibold text-gray-800">Notifikasi</p>
+                </div>
+                <div class="max-h-96 overflow-y-auto">
+                  <div v-for="notif in notifications" :key="notif.id" class="p-3 border-b hover:bg-gray-50 transition cursor-pointer">
+                    <p class="text-sm font-medium text-gray-800">{{ notif.title }}</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ notif.message }}</p>
+                    <p class="text-xs text-gray-400 mt-1">{{ formatTime(notif.created_at) }}</p>
+                  </div>
+                  <div v-if="notifications.length === 0" class="p-6 text-center text-gray-500">
+                    <BellIcon class="w-12 h-12 mx-auto text-gray-300 mb-2" />
+                    <p class="text-sm">Tidak ada notifikasi</p>
+                  </div>
+                </div>
+                <div class="p-2 border-t text-center">
+                  <router-link to="/siswa/notifications" class="text-xs text-green-600 hover:underline">Lihat semua</router-link>
+                </div>
+              </div>
+            </div>
+
+            <!-- User Menu -->
+            <div class="relative">
+              <button @click="toggleUserMenu" class="flex items-center gap-2 p-1 rounded-xl hover:bg-gray-100 transition">
                 <div class="w-8 h-8 bg-gradient-to-br from-green-600 to-teal-600 rounded-lg flex items-center justify-center text-white text-sm font-bold">
                   {{ authStore.user?.name?.charAt(0) || 'S' }}
                 </div>
                 <ChevronDownIcon class="w-4 h-4 text-gray-500" />
               </button>
+              
+              <!-- Dropdown User Menu -->
               <div v-if="userMenuOpen" class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border overflow-hidden z-50">
-                <div class="p-3 border-b">
+                <div class="p-3 border-b bg-gradient-to-r from-green-50 to-teal-50">
                   <p class="font-semibold text-gray-800">{{ authStore.user?.name }}</p>
                   <p class="text-xs text-gray-500">{{ authStore.user?.email }}</p>
                 </div>
                 <router-link to="/siswa/profile" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition">
                   <UserIcon class="w-4 h-4 text-gray-500" /> Profile
+                </router-link>
+                <router-link to="/siswa/notifications" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition">
+                  <BellIcon class="w-4 h-4 text-gray-500" /> Notifikasi
                 </router-link>
                 <hr>
                 <button @click="logout" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 text-red-600 transition">
@@ -157,9 +194,10 @@
 
 <script setup>
 import { DocumentArrowUpIcon } from '@heroicons/vue/24/outline'
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import axios from '../plugins/axios'
 import {
   HomeIcon, MapPinIcon, BookOpenIcon, DocumentTextIcon, BuildingOffice2Icon,
   QuestionMarkCircleIcon, BellIcon, UserIcon, ArrowRightOnRectangleIcon,
@@ -170,18 +208,64 @@ const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 
+// State
 const sidebarCollapsed = ref(false)
 const userMenuOpen = ref(false)
-const notifOpen = ref(false)
+const showNotif = ref(false)
+const notifications = ref([])
+const unreadCount = ref(0)
 
+// Toggle functions
+const toggleSidebar = () => {
+  sidebarCollapsed.value = !sidebarCollapsed.value
+}
+
+const toggleUserMenu = () => {
+  userMenuOpen.value = !userMenuOpen.value
+  if (showNotif.value) showNotif.value = false
+}
+
+const toggleNotif = () => {
+  showNotif.value = !showNotif.value
+  if (userMenuOpen.value) userMenuOpen.value = false
+}
+
+// Format time
+const formatTime = (date) => {
+  if (!date) return ''
+  const now = new Date()
+  const notifDate = new Date(date)
+  const diff = Math.floor((now - notifDate) / 1000 / 60)
+  
+  if (diff < 1) return 'Baru saja'
+  if (diff < 60) return `${diff} menit lalu`
+  if (diff < 1440) return `${Math.floor(diff / 60)} jam lalu`
+  return `${Math.floor(diff / 1440)} hari lalu`
+}
+
+// Fetch notifications
+const fetchNotifications = async () => {
+  try {
+    const res = await axios.get('/notifications')
+    notifications.value = res.data.data || res.data || []
+    unreadCount.value = notifications.value.filter(n => !n.is_read).length
+  } catch (error) {
+    console.error('Failed to fetch notifications:', error)
+  }
+}
+
+// Page title
 const pageTitle = computed(() => {
   const titles = {
     '/siswa/dashboard': 'Dashboard',
+    '/siswa/report': 'Upload Laporan',
     '/siswa/attendance': 'Absensi GPS',
     '/siswa/logbook': 'Logbook Harian',
     '/siswa/permission': 'Pengajuan Izin',
     '/siswa/company': 'Info Perusahaan',
-    '/siswa/guide': 'Panduan PKL'
+    '/siswa/guide': 'Panduan PKL',
+    '/siswa/profile': 'Profile',
+    '/siswa/notifications': 'Notifikasi'
   }
   return titles[route.path] || 'Dashboard'
 })
@@ -196,8 +280,45 @@ const pageDescription = computed(() => {
   return desc[route.path] || ''
 })
 
+// Logout
 const logout = async () => {
   await authStore.logout()
   router.push('/login')
 }
+
+// Click outside handler
+const handleClickOutside = (e) => {
+  if (!e.target.closest('.relative')) {
+    userMenuOpen.value = false
+    showNotif.value = false
+  }
+}
+
+// Lifecycle
+onMounted(() => {
+  fetchNotifications()
+  setInterval(fetchNotifications, 30000)
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>
+
+<style scoped>
+/* Scrollbar styling */
+nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+nav::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+nav::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+</style>

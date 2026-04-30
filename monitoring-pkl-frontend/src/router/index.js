@@ -115,7 +115,8 @@ const routes = [
       { path: 'reports', component: () => import('../views/guru/Reports.vue') },
       { path: 'notifications', component: () => import('../views/shared/Notifications.vue') },
       { path: 'profile', component: () => import('../views/shared/Profile.vue') },
-      { path: '', redirect: '/guru/dashboard' }
+      { path: '', redirect: '/guru/dashboard' },
+      { path: 'rekap-absensi',component: () => import('../views/guru/RekapAbsensi.vue')}
     ] 
   },
 

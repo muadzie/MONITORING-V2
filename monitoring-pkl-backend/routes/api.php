@@ -110,6 +110,8 @@ Route::prefix('guru')->middleware('auth:sanctum')->group(function () {
     // Dashboard
     Route::get('/dashboard/stats', [App\Http\Controllers\Api\Guru\DashboardController::class, 'stats']);
     Route::get('/top-students', [App\Http\Controllers\Api\Guru\DashboardController::class, 'topStudents']);
+    Route::get('/attendance/chart', [App\Http\Controllers\Api\Guru\DashboardController::class, 'attendanceChart']);
+
 
      // MONITORING SISWA - TAMBAHKAN INI
     Route::get('/monitoring', [App\Http\Controllers\Api\Guru\MonitoringController::class, 'index']);
@@ -143,6 +145,7 @@ Route::prefix('guru')->middleware('auth:sanctum')->group(function () {
     Route::get('/attendances', [App\Http\Controllers\Api\Guru\AttendanceController::class, 'index']);
 Route::get('/attendances/summary', [App\Http\Controllers\Api\Guru\AttendanceController::class, 'summary']);
  Route::get('/students', [App\Http\Controllers\Api\Guru\AttendanceController::class, 'students']);
+ Route::get('/attendance-summary', [App\Http\Controllers\Api\Guru\AttendanceSummaryController::class, 'index']);
     
     // Reports
     Route::get('/reports/attendance', [App\Http\Controllers\Api\Guru\ReportController::class, 'attendance']);

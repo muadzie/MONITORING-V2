@@ -5,10 +5,9 @@ namespace App\Http\Controllers\Api\Siswa;
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\Placement;
-use App\Models\Notification;
+use App\Models\Permission;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class AttendanceController extends Controller
 {
@@ -20,8 +19,33 @@ class AttendanceController extends Controller
         ]);
 
         $user = $request->user();
+        $today = Carbon::today()->format('Y-m-d');
+        $this->fillPreviousAbsences($user->id, $today);
         
-        // Ambil penempatan aktif siswa
+        // ============================================================
+        // CEK APAKAH SISWA MEMILIKI IZIN/SAKIT PADA TANGGAL INI
+        // ============================================================
+        $permission = Permission::where('user_id', $user->id)
+            ->where('date', $today)
+            ->where('status', 'approved')
+            ->first();
+        
+        if ($permission) {
+            $typeText = $permission->type === 'sick' ? 'SAKIT' : 'IZIN';
+            return response()->json([
+                'success' => false,
+                'message' => "Anda memiliki pengajuan {$typeText} pada tanggal ini yang telah disetujui. Tidak perlu melakukan absensi.",
+                'permission' => [
+                    'type' => $permission->type,
+                    'reason' => $permission->reason,
+                    'date' => $permission->date,
+                ]
+            ], 400);
+        }
+        
+        // ============================================================
+        // CEK APAKAH SISWA MEMILIKI PENEMPATAN AKTIF
+        // ============================================================
         $placement = Placement::where('student_id', $user->id)
             ->where('status', 'active')
             ->with('company')
@@ -29,46 +53,47 @@ class AttendanceController extends Controller
 
         if (!$placement) {
             return response()->json([
+                'success' => false,
                 'message' => 'Anda belum memiliki penempatan PKL aktif'
             ], 400);
         }
 
         $company = $placement->company;
 
-        if (!$company) {
-            return response()->json([
-                'message' => 'Data perusahaan tidak ditemukan'
-            ], 400);
-        }
-
-        // Hitung jarak
+        // ============================================================
+        // VALIDASI RADIUS
+        // ============================================================
         $distance = $this->calculateDistance(
             $request->latitude, $request->longitude,
             $company->latitude, $company->longitude
         );
 
-        $isValidLocation = $distance <= $company->radius;
-
-        if (!$isValidLocation) {
+        if ($distance > $company->radius) {
             return response()->json([
-                'message' => "Anda berada di luar radius absensi! Jarak Anda " . round($distance) . "m, radius perusahaan {$company->radius}m",
-                'distance' => round($distance),
-                'radius' => $company->radius
+                'success' => false,
+                'message' => "Anda berada di luar radius absensi! Jarak Anda " . round($distance) . "m, radius perusahaan {$company->radius}m"
             ], 400);
         }
 
-        $today = Carbon::today();
-        
-        // Cek apakah sudah ada absensi hari ini
+        // ============================================================
+        // CEK APAKAH SUDAH CHECK IN HARI INI
+        // ============================================================
         $attendance = Attendance::where('user_id', $user->id)
             ->whereDate('date', $today)
             ->first();
 
         if ($attendance && $attendance->check_in) {
             return response()->json([
+                'success' => false,
                 'message' => 'Anda sudah check in hari ini'
             ], 400);
         }
+
+        // ============================================================
+        // PROSES CHECK IN
+        // ============================================================
+        $checkInTime = Carbon::now();
+        $status = $checkInTime->format('H:i') > '08:00' ? 'late' : 'present';
 
         if (!$attendance) {
             $attendance = new Attendance();
@@ -77,32 +102,18 @@ class AttendanceController extends Controller
             $attendance->date = $today;
         }
 
-        $checkInTime = Carbon::now();
-        $status = $checkInTime->format('H:i') > '08:00' ? 'late' : 'present';
-
         $attendance->check_in = $checkInTime;
         $attendance->check_in_lat = $request->latitude;
         $attendance->check_in_lng = $request->longitude;
         $attendance->status = $status;
+        $attendance->is_valid_location = true;
         $attendance->save();
-
-        // Buat notifikasi untuk guru
-        if ($placement->teacher_id) {
-            Notification::create([
-                'user_id' => $placement->teacher_id,
-                'title' => 'Siswa Check In',
-                'message' => "{$user->name} telah melakukan check in PKL",
-                'type' => 'info',
-                'is_read' => false
-            ]);
-        }
 
         return response()->json([
             'success' => true,
             'message' => 'Check in berhasil',
             'status' => $status,
-            'distance' => round($distance),
-            'is_valid_location' => $isValidLocation
+            'distance' => round($distance)
         ]);
     }
 
@@ -114,40 +125,40 @@ class AttendanceController extends Controller
         ]);
 
         $user = $request->user();
-        $today = Carbon::today();
+        $today = Carbon::today()->format('Y-m-d');
         
+        // ============================================================
+        // CEK APAKAH SISWA MEMILIKI IZIN/SAKIT PADA TANGGAL INI
+        // ============================================================
+        $permission = Permission::where('user_id', $user->id)
+            ->where('date', $today)
+            ->where('status', 'approved')
+            ->first();
+        
+        if ($permission) {
+            $typeText = $permission->type === 'sick' ? 'SAKIT' : 'IZIN';
+            return response()->json([
+                'success' => false,
+                'message' => "Anda memiliki pengajuan {$typeText} pada tanggal ini yang telah disetujui. Tidak perlu melakukan absensi."
+            ], 400);
+        }
+
         $attendance = Attendance::where('user_id', $user->id)
             ->whereDate('date', $today)
             ->first();
 
         if (!$attendance || !$attendance->check_in) {
             return response()->json([
+                'success' => false,
                 'message' => 'Anda belum melakukan check in hari ini'
             ], 400);
         }
 
         if ($attendance->check_out) {
             return response()->json([
+                'success' => false,
                 'message' => 'Anda sudah check out hari ini'
             ], 400);
-        }
-
-        // Ambil penempatan untuk validasi radius
-        $placement = Placement::where('student_id', $user->id)
-            ->where('status', 'active')
-            ->with('company')
-            ->first();
-
-        if ($placement && $placement->company) {
-            $company = $placement->company;
-            $distance = $this->calculateDistance(
-                $request->latitude, $request->longitude,
-                $company->latitude, $company->longitude
-            );
-            
-            $isValidLocation = $distance <= $company->radius;
-        } else {
-            $isValidLocation = false;
         }
 
         $attendance->check_out = Carbon::now();
@@ -157,15 +168,32 @@ class AttendanceController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Check out berhasil',
-            'is_valid_location' => $isValidLocation
+            'message' => 'Check out berhasil'
         ]);
     }
 
     public function today(Request $request)
     {
         $user = $request->user();
-        $today = Carbon::today();
+        $today = Carbon::today()->format('Y-m-d');
+        
+        // Cek izin/sakit
+        $permission = Permission::where('user_id', $user->id)
+            ->where('date', $today)
+            ->where('status', 'approved')
+            ->first();
+        
+        if ($permission) {
+            return response()->json([
+                'success' => true,
+                'has_checked_in' => false,
+                'has_checked_out' => false,
+                'is_permission_day' => true,
+                'permission_type' => $permission->type,
+                'permission_reason' => $permission->reason,
+                'message' => "Hari ini Anda sedang {$permission->type}"
+            ]);
+        }
         
         $attendance = Attendance::where('user_id', $user->id)
             ->whereDate('date', $today)
@@ -175,6 +203,7 @@ class AttendanceController extends Controller
             'success' => true,
             'has_checked_in' => $attendance && $attendance->check_in ? true : false,
             'has_checked_out' => $attendance && $attendance->check_out ? true : false,
+            'is_permission_day' => false,
             'data' => $attendance
         ]);
     }
@@ -194,20 +223,67 @@ class AttendanceController extends Controller
         ]);
     }
 
-    // Fungsi untuk menghitung jarak (Haversine formula)
     private function calculateDistance($lat1, $lon1, $lat2, $lon2)
     {
-        $earthRadius = 6371000; // dalam meter
-        
+        $earthRadius = 6371000;
         $latDelta = deg2rad($lat2 - $lat1);
         $lonDelta = deg2rad($lon2 - $lon1);
-        
         $a = sin($latDelta / 2) * sin($latDelta / 2) +
              cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
              sin($lonDelta / 2) * sin($lonDelta / 2);
-        
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
-        
         return $earthRadius * $c;
     }
+
+    private function fillPreviousAbsences($userId, $currentDate)
+{
+    // Ambil tanggal mulai PKL (dari placement)
+    $placement = Placement::where('student_id', $userId)
+        ->where('status', 'active')
+        ->first();
+    
+    if (!$placement) {
+        return;
+    }
+    
+    $startDate = Carbon::parse($placement->start_date);
+    $endDate = Carbon::parse($currentDate)->subDay();
+    
+    if ($startDate > $endDate) {
+        return;
+    }
+    
+    for ($date = clone $startDate; $date <= $endDate; $date->addDay()) {
+        $dateStr = $date->format('Y-m-d');
+        
+        // Cek apakah sudah ada attendance
+        $exists = Attendance::where('user_id', $userId)
+            ->where('date', $dateStr)
+            ->exists();
+        
+        if (!$exists) {
+            // Cek apakah ada izin/sakit
+            $permission = Permission::where('user_id', $userId)
+                ->where('date', $dateStr)
+                ->where('status', 'approved')
+                ->exists();
+            
+            if (!$permission) {
+                // Buat alpha
+                Attendance::create([
+                    'user_id' => $userId,
+                    'company_id' => $placement->company_id,
+                    'date' => $dateStr,
+                    'status' => 'absent',
+                    'notes' => 'Tidak hadir tanpa keterangan (auto generated)',
+                    'is_valid_location' => false,
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now(),
+                ]);
+                
+                \Log::info("Auto filled absent for user {$userId} on {$dateStr}");
+            }
+        }
+    }
+}
 }
