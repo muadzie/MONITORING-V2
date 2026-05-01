@@ -44,17 +44,14 @@ const routes = [
       { path: 'monitoring/attendance', component: () => import('../views/admin/monitoring/Attendance.vue') },
       { path: 'monitoring/logbook', component: () => import('../views/admin/monitoring/Logbook.vue') },
       { path: 'monitoring/progress', component: () => import('../views/admin/monitoring/Progress.vue') },
-      { path: 'reports/attendance', component: () => import('../views/admin/Reports.vue') },
-      { path: 'reports/logbook', component: () => import('../views/admin/Reports.vue') },
-      { path: 'reports/grade', component: () => import('../views/admin/Reports.vue') },
-      { path: 'reports/summary', component: () => import('../views/admin/Reports.vue') },
+      { path: '/admin/reports', name: 'Reports', component: () => import('../views/admin/Reports.vue'), meta: { requiresAuth: true, role: 'admin' }},
       { path: 'assessments', component: () => import('../views/admin/Assessments.vue') },
       { path: 'settings/general', component: () => import('../views/admin/Settings.vue') },
       { path: 'settings/school', component: () => import('../views/admin/Settings.vue') },
       { path: 'settings/academic', component: () => import('../views/admin/Settings.vue') },
       { path: 'settings/radius', component: () => import('../views/admin/Settings.vue') },
       { path: 'profile', component: () => import('../views/shared/Profile.vue') },
-      { path: '', redirect: '/admin/dashboard' }
+      { path: '', redirect: '/admin/dashboard' },
     ] 
   },
 

@@ -200,43 +200,21 @@
         </div>
 
         <!-- Laporan (Dropdown) -->
-        <div class="mb-1">
-          <button 
-            @click="toggleMenu('reports')"
-            class="w-full flex items-center justify-between px-3 py-3 rounded-xl transition-all duration-200 group"
-            :class="[
-              openMenus.reports ? 'bg-indigo-50 text-indigo-600' : 'text-gray-600 hover:bg-gray-100',
-              sidebarCollapsed ? 'justify-center' : ''
-            ]"
-            :title="sidebarCollapsed ? 'Laporan' : ''"
-          >
-            <div class="flex items-center gap-3">
-              <DocumentChartBarIcon class="w-5 h-5 flex-shrink-0" />
-              <span v-if="!sidebarCollapsed" class="text-sm font-medium">Laporan</span>
-            </div>
-            <ChevronDownIcon 
-              v-if="!sidebarCollapsed"
-              class="w-4 h-4 transition-transform duration-200" 
-              :class="{ 'rotate-180': openMenus.reports }" 
-            />
-          </button>
-          <transition name="slide-down">
-            <div v-show="openMenus.reports && !sidebarCollapsed" class="ml-4 mt-1 space-y-1 border-l-2 border-indigo-200 pl-3">
-              <router-link to="/admin/reports/attendance" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100 hover:text-indigo-600 transition">
-                <span>📋</span> Laporan Absensi
-              </router-link>
-              <router-link to="/admin/reports/logbook" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100 hover:text-indigo-600 transition">
-                <span>📖</span> Laporan Logbook
-              </router-link>
-              <router-link to="/admin/reports/grade" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100 hover:text-indigo-600 transition">
-                <span>🎯</span> Laporan Nilai
-              </router-link>
-              <router-link to="/admin/reports/summary" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100 hover:text-indigo-600 transition">
-                <span>📊</span> Rekap Keseluruhan
-              </router-link>
-            </div>
-          </transition>
-        </div>
+        <!-- Laporan - Satu Menu Langsung (Tanpa Dropdown) -->
+<router-link 
+  to="/admin/reports"
+  class="flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 mb-1 group"
+  :class="[
+    $route.path.startsWith('/admin/reports') 
+      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md' 
+      : 'text-gray-600 hover:bg-gray-100',
+    sidebarCollapsed ? 'justify-center' : ''
+  ]"
+  :title="sidebarCollapsed ? 'Laporan' : ''"
+>
+  <DocumentChartBarIcon class="w-5 h-5 flex-shrink-0" />
+  <span v-if="!sidebarCollapsed" class="text-sm font-medium">Laporan</span>
+</router-link>
 
         <!-- Penilaian (Dropdown) -->
         <div class="mb-1">
@@ -263,9 +241,6 @@
             <div v-show="openMenus.assessment && !sidebarCollapsed" class="ml-4 mt-1 space-y-1 border-l-2 border-indigo-200 pl-3">
               <router-link to="/admin/assessments" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100 hover:text-indigo-600 transition">
                 <span>⭐</span> Nilai PKL
-              </router-link>
-              <router-link to="/admin/assessments/report" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100 hover:text-indigo-600 transition">
-                <span>📊</span> Rekap Nilai
               </router-link>
             </div>
           </transition>
@@ -296,15 +271,6 @@
             <div v-show="openMenus.settings && !sidebarCollapsed" class="ml-4 mt-1 space-y-1 border-l-2 border-indigo-200 pl-3">
               <router-link to="/admin/settings/general" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100 hover:text-indigo-600 transition">
                 <span>⚙️</span> Umum
-              </router-link>
-              <router-link to="/admin/settings/school" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100 hover:text-indigo-600 transition">
-                <span>🏫</span> Data Sekolah
-              </router-link>
-              <router-link to="/admin/settings/academic" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100 hover:text-indigo-600 transition">
-                <span>📅</span> Tahun Ajaran
-              </router-link>
-              <router-link to="/admin/settings/radius" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100 hover:text-indigo-600 transition">
-                <span>📍</span> Pengaturan Radius
               </router-link>
             </div>
           </transition>
@@ -471,8 +437,8 @@ const isMobile = computed(() => windowWidth.value < 1024)
 
 // Dropdown menu states (default terbuka untuk Users dan Master)
 const openMenus = ref({
-  users: true,      // Default terbuka
-  master: true,     // Default terbuka
+  users: false,      // Default terbuka
+  master: false,     // Default terbuka
   placement: false,
   monitoring: false,
   reports: false,

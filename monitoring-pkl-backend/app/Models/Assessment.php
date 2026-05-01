@@ -1,4 +1,5 @@
 <?php
+// app/Models/Assessment.php
 
 namespace App\Models;
 
@@ -17,8 +18,19 @@ class Assessment extends Model
         'report_score',
         'attitude_score',
         'performance_score',
+        'discipline_score',
         'final_score',
         'notes'
+    ];
+    
+    protected $casts = [
+        'attendance_score' => 'integer',
+        'logbook_score' => 'integer',
+        'report_score' => 'integer',
+        'attitude_score' => 'integer',
+        'performance_score' => 'integer',
+        'discipline_score' => 'integer',
+        'final_score' => 'decimal:2'
     ];
     
     public function student()
