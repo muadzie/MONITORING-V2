@@ -29,6 +29,7 @@ class PlacementController extends Controller
             'end_date' => 'required|date|after:start_date',
             'status' => 'required|in:active,completed,canceled',
             'notes' => 'nullable|string',
+            'shift_start' => 'nullable|string|max:5',
         ]);
 
         // Cek apakah siswa sudah memiliki penempatan aktif
@@ -50,6 +51,7 @@ class PlacementController extends Controller
             'end_date' => $request->end_date,
             'status' => $request->status,
             'notes' => $request->notes,
+            'shift_start' => $request->shift_start,
         ]);
         
         // Update company_id dan teacher_id di user
@@ -99,6 +101,9 @@ class PlacementController extends Controller
         }
         if ($request->has('notes')) {
             $updateData['notes'] = $request->notes;
+        }
+        if ($request->has('shift_start')) {
+            $updateData['shift_start'] = $request->shift_start;
         }
         
         $placement->update($updateData);

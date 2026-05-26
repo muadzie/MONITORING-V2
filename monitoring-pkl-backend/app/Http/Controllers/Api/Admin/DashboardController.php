@@ -203,8 +203,46 @@ class DashboardController extends Controller
             'permit' => Attendance::whereDate('date', $today)->where('status', 'permit')->count(),
         ],
         'recent_activities' => $this->getRecentActivities(),
-        'top_students' => $this->getTopStudents()
+        'top_students' => $this->getTopStudents(),
+        'companies_with_students' => $this->getCompaniesWithStudents(),
     ]);
+}
+
+public function companiesWithStudents()
+{
+    return response()->json($this->getCompaniesWithStudents());
+}
+
+private function getCompaniesWithStudents()
+{
+    return Company::with(['students' => function($q) {
+            $q->select('id', 'name', 'nisn', 'company_id', 'kelas', 'jurusan')
+              ->where('role_id', 2)
+              ->where('is_active', true)
+              ->orderBy('name');
+        }])
+        ->withCount(['students' => function($q) {
+            $q->where('role_id', 2)->where('is_active', true);
+        }])
+        ->orderBy('name')
+        ->get()
+        ->map(function($company) {
+            return [
+                'id' => $company->id,
+                'name' => $company->name,
+                'address' => $company->address,
+                'student_count' => $company->students_count,
+                'students' => $company->students->map(function($student) {
+                    return [
+                        'id' => $student->id,
+                        'name' => $student->name,
+                        'nisn' => $student->nisn,
+                        'kelas' => $student->kelas,
+                        'jurusan' => $student->jurusan,
+                    ];
+                }),
+            ];
+        });
 }
 
 private function getRecentActivities()

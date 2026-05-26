@@ -166,6 +166,11 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">Radius (meter) <span class="text-red-500">*</span></label>
                 <input v-model="form.radius" type="number" min="10" class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500" required>
               </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Batas Waktu Check-in</label>
+                <input v-model="form.checkin_deadline" type="time" class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                <p class="text-xs text-gray-400 mt-1">Kosongi jika ingin pakai pengaturan global</p>
+              </div>
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Telepon</label>
@@ -299,7 +304,8 @@ const form = ref({
   radius: 100,
   phone: '',
   email: '',
-  description: ''
+  description: '',
+  checkin_deadline: ''
 })
 
 const formatPhone = (e) => {
@@ -511,7 +517,8 @@ const editCompany = (company) => {
     radius: company.radius || 100,
     phone: company.phone || '',
     email: company.email || '',
-    description: company.description || ''
+    description: company.description || '',
+    checkin_deadline: company.checkin_deadline || ''
   }
   searchAddress.value = ''
   showModal.value = true

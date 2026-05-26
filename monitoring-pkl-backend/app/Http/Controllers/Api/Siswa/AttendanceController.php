@@ -17,6 +17,9 @@ class AttendanceController extends Controller
         $request->validate([
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
+            'photo' => 'nullable|string',
+            'logbook_activity' => 'nullable|string',
+            'logbook_description' => 'nullable|string',
         ]);
 
         $user = $request->user();
@@ -114,7 +117,13 @@ class AttendanceController extends Controller
         // PROSES CHECK IN
         // ============================================================
         $checkInTime = Carbon::now();
-        $status = $checkInTime->format('H:i') > '08:00' ? 'late' : 'present';
+        
+        // Tentukan batas waktu: shift_start placement -> deadline perusahaan -> global setting -> default 08:00
+        $deadline = $placement->shift_start 
+            ?? $company->checkin_deadline 
+            ?? \App\Models\Setting::getValue('checkin_deadline', '08:00');
+        
+        $status = $checkInTime->format('H:i') > $deadline ? 'late' : 'present';
 
         if (!$attendance) {
             $attendance = new Attendance();
@@ -128,7 +137,26 @@ class AttendanceController extends Controller
         $attendance->check_in_lng = $request->longitude;
         $attendance->status = $status;
         $attendance->is_valid_location = true;
+
+        if ($request->filled('photo')) {
+            $attendance->photo = $this->saveBase64Photo($request->photo, $user->id);
+        }
+
         $attendance->save();
+
+        if ($request->filled('logbook_activity')) {
+            try {
+                \App\Models\Logbook::create([
+                    'user_id' => $user->id,
+                    'date' => $today,
+                    'activity' => $request->logbook_activity,
+                    'description' => $request->logbook_description ?? '',
+                    'status' => 'pending',
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Logbook auto-create error: ' . $e->getMessage());
+            }
+        }
 
         return response()->json([
             'success' => true,
@@ -143,6 +171,7 @@ class AttendanceController extends Controller
         $request->validate([
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
+            'photo' => 'nullable|string',
         ]);
 
         $user = $request->user();
@@ -206,6 +235,11 @@ class AttendanceController extends Controller
         $attendance->check_out = Carbon::now();
         $attendance->check_out_lat = $request->latitude;
         $attendance->check_out_lng = $request->longitude;
+
+        if ($request->filled('photo')) {
+            $attendance->photo_out = $this->saveBase64Photo($request->photo, $user->id);
+        }
+
         $attendance->save();
 
         return response()->json([
@@ -342,9 +376,41 @@ class AttendanceController extends Controller
         ]);
     }
     
+    public function todayWithPhoto(Request $request)
+    {
+        $user = $request->user();
+        $today = Carbon::today()->format('Y-m-d');
+
+        $attendance = Attendance::where('user_id', $user->id)
+            ->whereDate('date', $today)
+            ->first();
+
+        $photoUrl = null;
+        if ($attendance && $attendance->photo) {
+            $photoUrl = asset('storage/' . $attendance->photo);
+        }
+
+        return response()->json([
+            'success' => true,
+            'has_checked_in' => $attendance && $attendance->check_in ? true : false,
+            'has_checked_out' => $attendance && $attendance->check_out ? true : false,
+            'data' => $attendance,
+            'photo_url' => $photoUrl,
+        ]);
+    }
+
     private function calculateDistance($lat1, $lon1, $lat2, $lon2)
     {
         return haversineDistance($lat1, $lon1, $lat2, $lon2);
+    }
+
+    private function saveBase64Photo($base64, $userId)
+    {
+        $imageData = base64_decode($base64);
+        $filename = 'attendance_' . $userId . '_' . time() . '.jpg';
+        $path = 'attendance-photos/' . $filename;
+        \Illuminate\Support\Facades\Storage::disk('public')->put($path, $imageData);
+        return $path;
     }
 
     private function fillPreviousAbsences($userId, $currentDate)

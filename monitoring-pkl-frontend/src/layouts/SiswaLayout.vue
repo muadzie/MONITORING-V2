@@ -42,14 +42,40 @@
       <!-- Navigation Menu -->
       <nav class="flex-1 px-3 py-4 overflow-y-auto h-[calc(100vh-200px)] scrollbar-thin" :class="sidebarCollapsed ? 'px-2' : ''">
         
-        <!-- MAIN Section -->
+        <!-- ABSENSI Section (Main/Primary) -->
         <div class="mb-4">
           <div v-if="!sidebarCollapsed" class="px-3 mb-2">
-            <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">MAIN</p>
+            <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">ABSENSI</p>
           </div>
+          
+          <router-link 
+            to="/siswa/attendance" 
+            class="flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 mb-1 group relative"
+            :class="[
+              $route.path === '/siswa/attendance' 
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md' 
+                : 'text-gray-600 hover:bg-gray-100',
+              sidebarCollapsed ? 'justify-center' : ''
+            ]"
+            :title="sidebarCollapsed ? 'Absensi + Logbook' : ''"
+          >
+            <CameraIcon class="w-5 h-5 flex-shrink-0" :class="$route.path === '/siswa/attendance' ? 'text-white' : 'text-gray-500 group-hover:text-emerald-600'" />
+            <span v-if="!sidebarCollapsed" class="text-sm font-medium">Absensi + Logbook</span>
+            <div v-if="sidebarCollapsed" class="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-nowrap">
+              Absensi + Logbook
+            </div>
+          </router-link>
+        </div>
+
+        <!-- INFORMASI Section -->
+        <div class="mb-4">
+          <div v-if="!sidebarCollapsed" class="px-3 mb-2">
+            <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">INFORMASI</p>
+          </div>
+          
           <router-link 
             to="/siswa/dashboard" 
-            class="flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative"
+            class="flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 mb-1 group relative"
             :class="[
               $route.path === '/siswa/dashboard' 
                 ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md' 
@@ -64,14 +90,7 @@
               Dashboard
             </div>
           </router-link>
-        </div>
 
-        <!-- AKTIVITAS PKL Section -->
-        <div class="mb-4">
-          <div v-if="!sidebarCollapsed" class="px-3 mb-2">
-            <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">AKTIVITAS PKL</p>
-          </div>
-          
           <router-link 
             to="/siswa/report" 
             class="flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 mb-1 group relative"
@@ -87,42 +106,6 @@
             <span v-if="!sidebarCollapsed" class="text-sm font-medium">Upload Laporan</span>
             <div v-if="sidebarCollapsed" class="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-nowrap">
               Upload Laporan
-            </div>
-          </router-link>
-          
-          <router-link 
-            to="/siswa/attendance" 
-            class="flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 mb-1 group relative"
-            :class="[
-              $route.path === '/siswa/attendance' 
-                ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md' 
-                : 'text-gray-600 hover:bg-gray-100',
-              sidebarCollapsed ? 'justify-center' : ''
-            ]"
-            :title="sidebarCollapsed ? 'Absensi GPS' : ''"
-          >
-            <MapPinIcon class="w-5 h-5 flex-shrink-0" :class="$route.path === '/siswa/attendance' ? 'text-white' : 'text-gray-500 group-hover:text-emerald-600'" />
-            <span v-if="!sidebarCollapsed" class="text-sm font-medium">Absensi GPS</span>
-            <div v-if="sidebarCollapsed" class="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-nowrap">
-              Absensi GPS
-            </div>
-          </router-link>
-          
-          <router-link 
-            to="/siswa/logbook" 
-            class="flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 mb-1 group relative"
-            :class="[
-              $route.path === '/siswa/logbook' 
-                ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md' 
-                : 'text-gray-600 hover:bg-gray-100',
-              sidebarCollapsed ? 'justify-center' : ''
-            ]"
-            :title="sidebarCollapsed ? 'Logbook Harian' : ''"
-          >
-            <BookOpenIcon class="w-5 h-5 flex-shrink-0" :class="$route.path === '/siswa/logbook' ? 'text-white' : 'text-gray-500 group-hover:text-emerald-600'" />
-            <span v-if="!sidebarCollapsed" class="text-sm font-medium">Logbook Harian</span>
-            <div v-if="sidebarCollapsed" class="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-nowrap">
-              Logbook Harian
             </div>
           </router-link>
           
@@ -367,7 +350,6 @@
 </template>
 
 <script setup>
-import { DocumentArrowUpIcon } from '@heroicons/vue/24/outline'
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
@@ -375,7 +357,7 @@ import axios from '../plugins/axios'
 import {
   HomeIcon, MapPinIcon, BookOpenIcon, DocumentTextIcon, BuildingOffice2Icon,
   QuestionMarkCircleIcon, BellIcon, UserIcon, ArrowRightOnRectangleIcon,
-  ChevronDownIcon
+  ChevronDownIcon, CameraIcon, DocumentArrowUpIcon
 } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
@@ -477,9 +459,9 @@ const fetchNotifications = async () => {
 // Page title
 const pageTitle = computed(() => {
   const titles = {
+    '/siswa/attendance': 'Absensi + Logbook',
     '/siswa/dashboard': 'Dashboard',
     '/siswa/report': 'Upload Laporan',
-    '/siswa/attendance': 'Absensi GPS',
     '/siswa/logbook': 'Logbook Harian',
     '/siswa/permission': 'Pengajuan Izin',
     '/siswa/company': 'Info Perusahaan',
@@ -487,13 +469,13 @@ const pageTitle = computed(() => {
     '/siswa/profile': 'Profile Saya',
     '/siswa/notifications': 'Notifikasi'
   }
-  return titles[route.path] || 'Dashboard'
+  return titles[route.path] || 'Absensi'
 })
 
 const pageDescription = computed(() => {
   const desc = {
+    '/siswa/attendance': 'Absensi dengan scan foto dan catat kegiatan harian',
     '/siswa/dashboard': 'Ringkasan aktivitas PKL Anda',
-    '/siswa/attendance': 'Lakukan absensi dengan GPS sesuai lokasi PKL',
     '/siswa/logbook': 'Catat kegiatan harian Anda selama PKL',
     '/siswa/permission': 'Ajukan izin atau sakit jika tidak dapat hadir',
     '/siswa/company': 'Informasi perusahaan tempat PKL',

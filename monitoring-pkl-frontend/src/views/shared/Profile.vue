@@ -40,6 +40,10 @@
             <h3 class="font-semibold text-gray-800 mb-4">Ganti Password</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Password Saat Ini</label>
+                <input v-model="password.current" type="password" class="w-full px-4 py-2 border rounded-lg" placeholder="Password saat ini">
+              </div>
+              <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Password Baru</label>
                 <input v-model="password.new" type="password" class="w-full px-4 py-2 border rounded-lg" placeholder="Kosongkan jika tidak ingin mengganti">
               </div>
@@ -86,6 +90,7 @@ const formatPhone = (e) => {
 }
 
 const password = ref({
+  current: '',
   new: '',
   confirm: ''
 })
@@ -105,23 +110,40 @@ const updateProfile = async () => {
       phone: profile.value.phone
     }
     
+    await axios.put('/profile', data)
+    
     if (password.value.new) {
       if (password.value.new !== password.value.confirm) {
         toast.error('Konfirmasi password tidak sesuai')
+        loading.value = false
         return
       }
-      data.password = password.value.new
+      if (!password.value.current) {
+        toast.error('Password saat ini harus diisi')
+        loading.value = false
+        return
+      }
+      try {
+        await axios.put('/profile/password', {
+          current_password: password.value.current,
+          password: password.value.new,
+          password_confirmation: password.value.confirm
+        })
+        toast.success('Password berhasil diubah')
+      } catch (pwError) {
+        toast.error(pwError.response?.data?.message || 'Gagal mengubah password')
+        loading.value = false
+        return
+      }
     }
     
-    await axios.put('/profile', data)
     toast.success('Profil berhasil diperbarui')
     
-    // Update store
     authStore.user.name = profile.value.name
     authStore.user.email = profile.value.email
     authStore.user.phone = profile.value.phone
     
-    // Reset password fields
+    password.value.current = ''
     password.value.new = ''
     password.value.confirm = ''
   } catch (error) {

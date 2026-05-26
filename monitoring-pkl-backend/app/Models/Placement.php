@@ -15,7 +15,8 @@ class Placement extends Model
         'start_date',
         'end_date',
         'status',
-        'notes'
+        'notes',
+        'shift_start',
     ];
     
     protected $casts = [

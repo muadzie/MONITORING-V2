@@ -257,6 +257,17 @@
             </div>
           </div>
 
+          <!-- Jam Mulai Shift -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Jam Mulai Shift</label>
+            <input
+              v-model="form.shift_start"
+              type="time"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            >
+            <p class="text-xs text-gray-400 mt-1">Kosongi jika pakai jam default perusahaan</p>
+          </div>
+
           <!-- Status -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
@@ -340,7 +351,8 @@ const form = ref({
   start_date: new Date().toISOString().split('T')[0],
   end_date: '',
   status: 'active',
-  notes: ''
+  notes: '',
+  shift_start: ''
 })
 
 // Helper functions
@@ -520,7 +532,8 @@ const openModal = () => {
     start_date: new Date().toISOString().split('T')[0],
     end_date: '',
     status: 'active',
-    notes: ''
+    notes: '',
+    shift_start: ''
   }
   showModal.value = true
 }
@@ -535,7 +548,8 @@ const editPlacement = (placement) => {
     start_date: placement.start_date,
     end_date: placement.end_date,
     status: placement.status,
-    notes: placement.notes || ''
+    notes: placement.notes || '',
+    shift_start: placement.shift_start || ''
   }
   showModal.value = true
 }

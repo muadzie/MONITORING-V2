@@ -127,7 +127,8 @@ const handleLogin = async () => {
   try {
     await authStore.login(form.value)
     const role = authStore.role?.toLowerCase()
-    router.push(`/${role}/dashboard`)
+    const defaultRoutes = { admin: '/admin/dashboard', siswa: '/siswa/attendance', guru: '/guru/dashboard', perusahaan: '/perusahaan/dashboard' }
+    router.push(defaultRoutes[role] || `/${role}/dashboard`)
   } catch (err) {
     error.value = err.response?.data?.message || 'Email atau password salah'
     setTimeout(() => { error.value = '' }, 3000)

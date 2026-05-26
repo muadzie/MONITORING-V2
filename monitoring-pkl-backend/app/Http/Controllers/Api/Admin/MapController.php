@@ -12,7 +12,7 @@ class MapController extends Controller
     /**
      * Get all company locations with student counts
      */
-   public function getCompanyLocations()
+    public function getCompanyLocations()
     {
         // Ambil semua perusahaan dengan data lengkap
         $companies = Company::select('id', 'name', 'address', 'latitude', 'longitude', 'radius')
@@ -23,20 +23,32 @@ class MapController extends Controller
         // Format response dengan company_name
         $result = [];
         foreach ($companies as $company) {
-            // Hitung jumlah siswa magang aktif
-            $studentsCount = Placement::where('company_id', $company->id)
+            // Ambil siswa magang aktif
+            $placements = Placement::with('student.class')
+                ->where('company_id', $company->id)
                 ->where('status', 'active')
-                ->count();
+                ->get();
+            
+            $studentsList = $placements->map(function ($p) {
+                return [
+                    'id' => $p->student->id,
+                    'name' => $p->student->name,
+                    'nisn' => $p->student->nisn,
+                    'kelas' => $p->student->kelas ?? ($p->student->class ? $p->student->class->name : null),
+                    'jurusan' => $p->student->jurusan,
+                ];
+            })->values()->toArray();
             
             $result[] = [
                 'id' => $company->id,
-                'company_name' => $company->name,  // ← Pastikan ini ada
-                'name' => $company->name,          // ← Tambahkan juga ini
+                'company_name' => $company->name,
+                'name' => $company->name,
                 'address' => $company->address,
                 'latitude' => (float) $company->latitude,
                 'longitude' => (float) $company->longitude,
                 'radius' => $company->radius,
-                'students_count' => $studentsCount,
+                'students_count' => count($studentsList),
+                'students' => $studentsList,
             ];
         }
         

@@ -131,12 +131,20 @@
               <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" :class="getRadiusColorClass(marker.radius)">
                 <BuildingOffice2Icon class="w-5 h-5" :class="getRadiusIconColor(marker.radius)" />
               </div>
-              <div class="flex-1 min-w-0">
+              <div class="flex-1 min-w-0" @click="flyToLocation(marker)">
                 <h4 class="font-semibold text-gray-800 truncate">{{ marker.company_name || marker.name }}</h4>
                 <p class="text-xs text-gray-500 truncate">{{ marker.address }}</p>
                 <div class="flex items-center gap-3 mt-1">
                   <span class="text-xs text-indigo-600">📍 Radius: {{ marker.radius }}m</span>
                   <span class="text-xs text-green-600">👥 {{ marker.students_count || 0 }} siswa</span>
+                </div>
+                <div v-if="selectedMarker?.id === marker.id && marker.students?.length" class="mt-2 pt-2 border-t border-indigo-100 space-y-1">
+                  <div v-for="student in marker.students" :key="student.id" class="flex items-center gap-2">
+                    <div class="w-5 h-5 bg-indigo-100 rounded-full flex items-center justify-center text-[8px] font-bold text-indigo-600 flex-shrink-0">
+                      {{ student.name.charAt(0) }}
+                    </div>
+                    <span class="text-xs text-gray-600 truncate">{{ student.name }}</span>
+                  </div>
                 </div>
               </div>
               <button 
@@ -246,6 +254,21 @@
             <div>
               <p class="text-sm text-gray-500">Jumlah Siswa Magang</p>
               <p class="text-2xl font-bold text-indigo-600">{{ selectedMarker?.students_count || 0 }}</p>
+            </div>
+          </div>
+          <div v-if="selectedMarker?.students?.length" class="border-t pt-4">
+            <p class="text-sm text-gray-500 mb-2">Daftar Siswa:</p>
+            <div class="max-h-48 overflow-y-auto space-y-2">
+              <div v-for="student in selectedMarker.students" :key="student.id"
+                class="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
+                <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-xs font-bold text-indigo-600 flex-shrink-0">
+                  {{ student.name.charAt(0) }}
+                </div>
+                <div class="min-w-0">
+                  <p class="text-sm font-medium text-gray-800 truncate">{{ student.name }}</p>
+                  <p class="text-xs text-gray-500">{{ student.kelas || '-' }} · {{ student.nisn || '-' }}</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -374,10 +397,11 @@ const addMarkersToMap = () => {
     
     const markerLayer = L.marker([marker.latitude, marker.longitude], { icon: customIcon }).addTo(map)
     markerLayer.bindTooltip(`
-      <div style="padding: 8px; max-width: 200px;">
+      <div style="padding: 8px; max-width: 220px;">
         <strong>${marker.company_name}</strong><br>
         Radius: ${marker.radius}m<br>
         Siswa: ${marker.students_count || 0}
+        ${marker.students?.length ? '<hr style="margin: 4px 0; border-color: #eee">' + marker.students.map(s => '• ' + s.name).join('<br>') : ''}
       </div>
     `, { sticky: true })
     

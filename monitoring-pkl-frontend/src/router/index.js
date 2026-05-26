@@ -67,7 +67,6 @@ const routes = [
     children: [
       { path: 'dashboard', component: () => import('../views/siswa/Dashboard.vue') },
       { path: 'attendance', component: () => import('../views/siswa/Attendance.vue') },
-      { path: 'logbook', component: () => import('../views/siswa/Logbook.vue') },
       { path: 'permission', component: () => import('../views/siswa/Permission.vue') },
       { path: 'report', component: () => import('../views/siswa/Report.vue') },
       { path: 'final-report', component: () => import('../views/siswa/FinalReport.vue') },
@@ -75,7 +74,7 @@ const routes = [
       { path: 'guide', component: () => import('../views/siswa/Guide.vue') },
       { path: 'notifications', component: () => import('../views/shared/Notifications.vue') },
       { path: 'profile', component: () => import('../views/shared/Profile.vue') },
-      { path: '', redirect: '/siswa/dashboard' }
+      { path: '', redirect: '/siswa/attendance' }
     ] 
   },
 
@@ -135,6 +134,11 @@ const router = createRouter({
 // ================================================================
 // ===================== NAVIGATION GUARD =========================
 // ================================================================
+const getDefaultRoute = (role) => {
+  const routes = { admin: '/admin/dashboard', siswa: '/siswa/attendance', guru: '/guru/dashboard', perusahaan: '/perusahaan/dashboard' }
+  return routes[role] || `/${role}/dashboard`
+}
+
 router.beforeEach(async (to, from, next) => {
   const token = localStorage.getItem('token')
   const authStore = useAuthStore()
@@ -150,7 +154,7 @@ router.beforeEach(async (to, from, next) => {
   // Guest routes (landing, login, register)
   if (to.meta.guest) {
     if (isLoggedIn && userRole && userRole !== 'null') {
-      next(`/${userRole}/dashboard`)
+      next(getDefaultRoute(userRole))
     } else {
       next()
     }
@@ -166,7 +170,7 @@ router.beforeEach(async (to, from, next) => {
   // Role-based access control
   if (to.meta.role && userRole !== to.meta.role.toLowerCase()) {
     if (userRole && userRole !== 'null') {
-      next(`/${userRole}/dashboard`)
+      next(getDefaultRoute(userRole))
     } else {
       next('/login')
     }

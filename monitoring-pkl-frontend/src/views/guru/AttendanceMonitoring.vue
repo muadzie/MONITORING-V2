@@ -169,6 +169,7 @@
               <th class="px-3 py-3 text-center text-xs font-semibold text-white uppercase w-20">Check In</th>
               <th class="px-3 py-3 text-center text-xs font-semibold text-white uppercase w-20">Check Out</th>
               <th class="px-3 py-3 text-center text-xs font-semibold text-white uppercase w-24">Status</th>
+              <th class="px-3 py-3 text-center text-xs font-semibold text-white uppercase w-20">Foto</th>
               <th class="px-3 py-3 text-center text-xs font-semibold text-white uppercase w-24">Validasi</th>
             </tr>
           </thead>
@@ -188,6 +189,12 @@
                 </span>
               </td>
               <td class="px-3 py-3 text-center">
+                <button v-if="att.photo" @click="previewPhoto(att.photo)" class="text-emerald-600 hover:text-emerald-800 text-xs underline" title="Lihat Foto">
+                  Lihat
+                </button>
+                <span v-else class="text-gray-400 text-xs">-</span>
+              </td>
+              <td class="px-3 py-3 text-center">
                 <span v-if="att.is_valid_location" class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs whitespace-nowrap">
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                   Valid
@@ -200,6 +207,14 @@
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- Photo Preview Modal -->
+    <div v-if="showPhotoPreview" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50" @click.self="showPhotoPreview = false">
+      <div class="max-w-lg w-full mx-4">
+        <img :src="previewPhotoUrl" class="w-full rounded-xl shadow-2xl" />
+        <button @click="showPhotoPreview = false" class="mt-4 w-full bg-white/20 text-white py-2 rounded-xl hover:bg-white/30 transition">Tutup</button>
       </div>
     </div>
 
@@ -223,6 +238,13 @@ const toast = useToast()
 
 // State
 const attendances = ref([])
+const showPhotoPreview = ref(false)
+const previewPhotoUrl = ref('')
+
+const previewPhoto = (photo) => {
+  previewPhotoUrl.value = photo?.startsWith('http') ? photo : `/storage/${photo}`
+  showPhotoPreview.value = true
+}
 const students = ref([])
 const loading = ref(false)
 const filters = ref({

@@ -207,6 +207,7 @@
               <th class="px-6 py-4 text-left text-xs font-semibold text-white uppercase">Check In</th>
               <th class="px-6 py-4 text-left text-xs font-semibold text-white uppercase">Check Out</th>
               <th class="px-6 py-4 text-left text-xs font-semibold text-white uppercase">Status</th>
+              <th class="px-6 py-4 text-center text-xs font-semibold text-white uppercase">Foto</th>
               <th class="px-6 py-4 text-center text-xs font-semibold text-white uppercase">Aksi</th>
              </tr>
           </thead>
@@ -246,6 +247,12 @@
                   <span class="w-1.5 h-1.5 rounded-full" :class="getStatusDotClass(item.status)"></span>
                   {{ getStatusText(item.status) }}
                 </span>
+              </td>
+              <td class="px-6 py-4 text-center">
+                <button v-if="item.photo" @click="previewPhoto(item.photo)" class="text-emerald-600 hover:text-emerald-800 text-xs underline" title="Lihat Foto">
+                  Lihat
+                </button>
+                <span v-else class="text-gray-400 text-xs">-</span>
               </td>
               <td class="px-6 py-4 text-center">
                 <button 
@@ -348,12 +355,25 @@
             <p class="text-sm mt-1">{{ selectedItem.notes }}</p>
           </div>
           
+          <div class="bg-gray-50 rounded-xl p-3" v-if="selectedItem.photo">
+            <p class="text-xs text-gray-500 mb-2">Foto Absensi</p>
+            <img :src="getPhotoUrl(selectedItem.photo)" class="w-full rounded-lg object-cover max-h-48 cursor-pointer" @click="previewPhoto(selectedItem.photo)" />
+          </div>
+          
           <div class="bg-gray-50 rounded-xl p-3">
             <p class="text-xs text-gray-500">Perusahaan</p>
             <p class="text-sm mt-1">{{ selectedItem.company?.name || '-' }}</p>
             <p class="text-xs text-gray-400 mt-1">{{ selectedItem.company?.address || '-' }}</p>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Photo Preview Modal -->
+    <div v-if="showPhotoPreview" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50" @click.self="showPhotoPreview = false">
+      <div class="max-w-lg w-full mx-4">
+        <img :src="previewPhotoUrl" class="w-full rounded-xl shadow-2xl" />
+        <button @click="showPhotoPreview = false" class="mt-4 w-full bg-white/20 text-white py-2 rounded-xl hover:bg-white/30 transition">Tutup</button>
       </div>
     </div>
   </div>
@@ -370,6 +390,20 @@ const data = ref([])
 const companies = ref([])
 const showDetailModal = ref(false)
 const selectedItem = ref(null)
+const showPhotoPreview = ref(false)
+const previewPhotoUrl = ref('')
+
+const previewPhoto = (photo) => {
+  previewPhotoUrl.value = getPhotoUrl(photo)
+  showPhotoPreview.value = true
+}
+
+const getPhotoUrl = (photo) => {
+  if (!photo) return ''
+  if (photo.startsWith('http')) return photo
+  if (photo.startsWith('/storage')) return photo
+  return `/storage/${photo}`
+}
 const currentPage = ref(1)
 const itemsPerPage = ref(15)
 

@@ -115,6 +115,8 @@ class MonitoringController extends Controller
                     'check_out' => $attendance->check_out,
                     'status' => $attendance->status,
                     'notes' => $attendance->notes,
+                    'photo' => $attendance->photo,
+                    'photo_out' => $attendance->photo_out,
                     'user' => $attendance->user ? [
                         'id' => $attendance->user->id,
                         'name' => $attendance->user->name,

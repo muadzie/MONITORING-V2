@@ -15,6 +15,7 @@ class Company extends Model
         'latitude',
         'longitude',
         'radius',
+        'checkin_deadline',
     ];
 
     // Accessor untuk format radius
@@ -53,5 +54,10 @@ class Company extends Model
     public function holidays()
     {
         return $this->hasMany(CompanyHoliday::class);
+    }
+
+    public function students()
+    {
+        return $this->hasMany(User::class, 'company_id');
     }
 }

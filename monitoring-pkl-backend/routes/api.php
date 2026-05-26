@@ -32,12 +32,21 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
      Route::get('/students/assessments', [App\Http\Controllers\Api\Admin\AssessmentController::class, 'getStudentsForAssessment']);
     Route::post('/assessments/{id}', [App\Http\Controllers\Api\Admin\AssessmentController::class, 'store']);
     
+    // ---------------------- IMPORT / EXPORT --------------------
+    Route::prefix('import')->group(function () {
+        Route::get('/template-siswa', [App\Http\Controllers\Api\Admin\ImportController::class, 'downloadTemplateSiswa']);
+        Route::get('/template-guru', [App\Http\Controllers\Api\Admin\ImportController::class, 'downloadTemplateGuru']);
+        Route::post('/siswa', [App\Http\Controllers\Api\Admin\ImportController::class, 'importSiswa']);
+        Route::post('/guru', [App\Http\Controllers\Api\Admin\ImportController::class, 'importGuru']);
+    });
+    
     // ---------------------- DASHBOARD --------------------------
     Route::prefix('dashboard')->group(function () {
         Route::get('/stats', [App\Http\Controllers\Api\Admin\DashboardController::class, 'stats']);
         Route::get('/all', [App\Http\Controllers\Api\Admin\DashboardController::class, 'getAllData']);
         Route::get('/recent-activities', [App\Http\Controllers\Api\Admin\DashboardController::class, 'recentActivities']);
         Route::get('/top-students', [App\Http\Controllers\Api\Admin\DashboardController::class, 'topStudents']);
+        Route::get('/companies-with-students', [App\Http\Controllers\Api\Admin\DashboardController::class, 'companiesWithStudents']);
     });
     Route::get('/attendance/stats', [App\Http\Controllers\Api\Admin\DashboardController::class, 'attendanceStats']);
     
@@ -217,6 +226,7 @@ Route::prefix('siswa')->middleware('auth:sanctum')->group(function () {
         Route::post('/check-out', [App\Http\Controllers\Api\Siswa\AttendanceController::class, 'checkOut']);
         Route::post('/photo', [App\Http\Controllers\Api\Siswa\AttendanceController::class, 'uploadPhoto']);
         Route::get('/today', [App\Http\Controllers\Api\Siswa\AttendanceController::class, 'today']);
+        Route::get('/today-with-photo', [App\Http\Controllers\Api\Siswa\AttendanceController::class, 'todayWithPhoto']);
         Route::get('/history', [App\Http\Controllers\Api\Siswa\AttendanceController::class, 'history']);
         Route::get('/monthly', [App\Http\Controllers\Api\Siswa\AttendanceController::class, 'monthly']);
     });

@@ -229,6 +229,53 @@
       </div>
     </div>
 
+    <!-- Daftar Perusahaan & Siswa -->
+    <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+      <div class="p-6 border-b">
+        <h3 class="text-lg font-semibold text-gray-800">Daftar Perusahaan & Siswa PKL</h3>
+        <p class="text-sm text-gray-500">Data perusahaan mitra dan siswa yang ditempatkan</p>
+      </div>
+      <div class="p-6">
+        <div v-if="companiesWithStudents.length === 0" class="text-center py-8 text-gray-500">
+          <BuildingOffice2Icon class="w-16 h-16 mx-auto text-gray-300 mb-3" />
+          <p>Belum ada data perusahaan</p>
+        </div>
+        <div v-else class="space-y-4">
+          <div v-for="company in companiesWithStudents" :key="company.id" class="border border-gray-200 rounded-xl overflow-hidden">
+            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 px-5 py-4 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold shadow-sm">
+                  {{ company.name.charAt(0) }}
+                </div>
+                <div>
+                  <h4 class="font-semibold text-gray-800">{{ company.name }}</h4>
+                  <p class="text-xs text-gray-500">{{ company.address || 'Alamat tidak tersedia' }} • {{ company.student_count }} siswa</p>
+                </div>
+              </div>
+              <span class="text-xs bg-white px-3 py-1 rounded-full text-indigo-600 font-medium shadow-sm border border-indigo-200">
+                {{ company.student_count }} Siswa
+              </span>
+            </div>
+            <div v-if="company.students && company.students.length > 0" class="divide-y divide-gray-100">
+              <div v-for="student in company.students" :key="student.id" class="px-5 py-3 flex items-center gap-3 hover:bg-gray-50 transition">
+                <div class="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 font-bold text-sm">
+                  {{ student.name.charAt(0) }}
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-gray-800">{{ student.name }}</p>
+                  <p class="text-xs text-gray-500">NISN: {{ student.nisn || '-' }} {{ student.kelas ? '• ' + student.kelas : '' }}</p>
+                </div>
+                <span class="text-xs text-gray-400">{{ student.jurusan || '' }}</span>
+              </div>
+            </div>
+            <div v-else class="px-5 py-4 text-sm text-gray-500 text-center">
+              Belum ada siswa ditempatkan
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Quick Actions -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <router-link to="/admin/students" class="flex items-center gap-4 p-4 bg-white rounded-xl shadow-sm hover:shadow-md transition group">
@@ -290,6 +337,7 @@ const stats = ref({})
 const attendanceStats = ref({})
 const recentActivities = ref([])
 const topStudents = ref([])
+const companiesWithStudents = ref([])
 
 const attendanceChart = ref(null)
 const logbookChart = ref(null)
@@ -347,6 +395,16 @@ const loadRecentActivities = async () => {
       { id: 3, description: 'Mengajukan izin sakit', user: 'Rizki Ramadhan', time: '2 jam lalu', type: 'permission', status: 'pending', icon: HeartIcon, bgColor: 'bg-red-100', iconColor: 'text-red-600', statusClass: 'bg-yellow-100 text-yellow-800' },
       { id: 4, description: 'Terlambat absen', user: 'Dewi Anggraeni', time: '3 jam lalu', type: 'attendance', status: 'late', icon: ClockIcon, bgColor: 'bg-yellow-100', iconColor: 'text-yellow-600', statusClass: 'bg-yellow-100 text-yellow-800' }
     ]
+  }
+}
+
+// Load companies with students
+const loadCompaniesWithStudents = async () => {
+  try {
+    const res = await axios.get('/admin/dashboard/companies-with-students')
+    companiesWithStudents.value = res.data
+  } catch (error) {
+    console.error('Failed to load companies with students:', error)
   }
 }
 
@@ -446,6 +504,7 @@ onMounted(() => {
   loadAttendanceStats()
   loadRecentActivities()
   loadTopStudents()
+  loadCompaniesWithStudents()
   initAttendanceChart()
   initLogbookChart()
   initCompanyChart()

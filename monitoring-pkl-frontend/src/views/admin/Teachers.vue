@@ -6,15 +6,35 @@
         <h1 class="text-2xl font-bold text-gray-800">Manajemen Guru</h1>
         <p class="text-gray-500 mt-1">Kelola data guru pembimbing PKL</p>
       </div>
-      <button 
-        @click="openModal" 
-        class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-2.5 rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center gap-2"
-      >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-        </svg>
-        Tambah Guru
-      </button>
+      <div class="flex items-center gap-3">
+        <button 
+          @click="downloadTemplate"
+          class="bg-white border-2 border-indigo-600 text-indigo-600 px-4 py-2.5 rounded-xl hover:bg-indigo-50 transition-all duration-300 flex items-center gap-2"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          Download Template
+        </button>
+        <button 
+          @click="openImportModal"
+          class="bg-white border-2 border-emerald-600 text-emerald-600 px-4 py-2.5 rounded-xl hover:bg-emerald-50 transition-all duration-300 flex items-center gap-2"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+          </svg>
+          Import Excel
+        </button>
+        <button 
+          @click="openModal" 
+          class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-2.5 rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center gap-2"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          Tambah Guru
+        </button>
+      </div>
     </div>
 
     <!-- Stats Cards -->
@@ -240,6 +260,75 @@
         </form>
       </div>
     </div>
+
+    <!-- Modal Import Excel -->
+    <div v-if="showImportModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50" @click.self="closeImportModal">
+      <div class="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto animate-fade-in-up shadow-2xl">
+        <div class="sticky top-0 bg-white p-5 border-b rounded-t-2xl">
+          <div class="flex justify-between items-center">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-gradient-to-br from-emerald-600 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-gray-800">Import Data Guru</h3>
+                <p class="text-sm text-gray-500">Upload file Excel data guru</p>
+              </div>
+            </div>
+            <button @click="closeImportModal" class="text-gray-400 hover:text-gray-600 transition">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="p-6 space-y-4">
+          <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4 text-sm text-emerald-800">
+            <p class="font-semibold mb-1">📋 Petunjuk:</p>
+            <ol class="list-decimal list-inside space-y-1 text-emerald-700">
+              <li>Download template Excel terlebih dahulu</li>
+              <li>Isi data guru sesuai format template</li>
+              <li>Upload file Excel yang sudah diisi</li>
+              <li>Email akan digenerate otomatis jika dikosongkan</li>
+              <li>Password default: <strong>guru123</strong></li>
+            </ol>
+          </div>
+
+          <form @submit.prevent="importExcel">
+            <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-emerald-500 transition cursor-pointer" @click="$refs.fileInput.click()" @dragover.prevent @drop.prevent="handleDrop">
+              <input ref="fileInput" type="file" accept=".xlsx,.xls,.csv" class="hidden" @change="handleFileChange">
+              <svg class="w-12 h-12 mx-auto text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+              </svg>
+              <p v-if="!selectedFile" class="text-gray-500">Klik untuk pilih file Excel</p>
+              <p v-else class="text-emerald-600 font-semibold">{{ selectedFile.name }}</p>
+              <p class="text-xs text-gray-400 mt-1">Format: .xlsx, .xls, .csv (Max 5MB)</p>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-4">
+              <button type="button" @click="closeImportModal" class="px-5 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium">Batal</button>
+              <button type="submit" :disabled="importing || !selectedFile" class="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-lg hover:shadow-lg transition-all font-medium disabled:opacity-50">
+                {{ importing ? 'Mengimport...' : 'Import Data' }}
+              </button>
+            </div>
+          </form>
+
+          <!-- Import Result -->
+          <div v-if="importResult" class="border rounded-lg p-4" :class="importResult.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
+            <p class="font-semibold" :class="importResult.success ? 'text-green-800' : 'text-red-800'">{{ importResult.message }}</p>
+            <div v-if="importResult.errors && importResult.errors.length > 0" class="mt-2 max-h-32 overflow-y-auto">
+              <p class="text-sm font-medium text-red-700">Peringatan:</p>
+              <ul class="text-xs text-red-600 list-disc list-inside">
+                <li v-for="(err, i) in importResult.errors" :key="i">{{ err }}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -385,6 +474,90 @@ const deleteTeacher = async (teacher) => {
 
 const resetSearch = () => {
   search.value = ''
+}
+
+// Import functionality
+const showImportModal = ref(false)
+const selectedFile = ref(null)
+const importing = ref(false)
+const importResult = ref(null)
+
+const openImportModal = () => {
+  showImportModal.value = true
+  selectedFile.value = null
+  importResult.value = null
+}
+
+const closeImportModal = () => {
+  showImportModal.value = false
+}
+
+const downloadTemplate = async () => {
+  try {
+    const response = await axios.get('/admin/import/template-guru', {
+      responseType: 'blob'
+    })
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', 'Template_Import_Guru_PKL.xlsx')
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.URL.revokeObjectURL(url)
+    toast.success('Template berhasil di download')
+  } catch (error) {
+    toast.error('Gagal download template')
+  }
+}
+
+const handleDrop = (e) => {
+  const file = e.dataTransfer.files[0]
+  if (file) validateAndSetFile(file)
+}
+
+const handleFileChange = (e) => {
+  const file = e.target.files[0]
+  if (file) validateAndSetFile(file)
+}
+
+const validateAndSetFile = (file) => {
+  const allowedTypes = ['.xlsx', '.xls', '.csv']
+  const ext = '.' + file.name.split('.').pop().toLowerCase()
+  if (!allowedTypes.includes(ext)) {
+    toast.error('Format file harus .xlsx, .xls, atau .csv')
+    return
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    toast.error('File maksimal 5MB')
+    return
+  }
+  selectedFile.value = file
+}
+
+const importExcel = async () => {
+  if (!selectedFile.value) return
+
+  importing.value = true
+  importResult.value = null
+  try {
+    const formData = new FormData()
+    formData.append('file', selectedFile.value)
+    const response = await axios.post('/admin/import/guru', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    importResult.value = response.data
+    if (response.data.success) {
+      toast.success(response.data.message)
+      await load()
+    }
+  } catch (error) {
+    const msg = error.response?.data?.message || 'Gagal mengimport data'
+    importResult.value = { success: false, message: msg }
+    toast.error(msg)
+  } finally {
+    importing.value = false
+  }
 }
 
 onMounted(() => {
